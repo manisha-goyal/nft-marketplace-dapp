@@ -12,6 +12,7 @@ contract NFTMarketplace is ReentrancyGuard {
 
     Counters.Counter private _itemIds; // Tracks the id of the last item (NFT) created
     Counters.Counter private _itemsSold; // Tracks the number of items sold
+    Counters.Counter private _itemsRemoved; // Tracks the number of items removed
 
     address payable owner; // Owner of the marketplace
     uint256 listingFee = 0.025 ether; // Fee to list an NFT for sale or auction
@@ -28,6 +29,7 @@ contract NFTMarketplace is ReentrancyGuard {
         address payable owner;
         uint256 price;
         bool sold;
+        bool removed;
     }
 
     struct AuctionItem {
@@ -52,7 +54,8 @@ contract NFTMarketplace is ReentrancyGuard {
         address seller,
         address owner,
         uint256 price,
-        bool sold
+        bool sold,
+        bool removed
     );
 
     event AuctionItemCreated (
@@ -66,7 +69,11 @@ contract NFTMarketplace is ReentrancyGuard {
         bool ended
     );
 
-    function createMarketItem(address nftContract, uint256 tokenId, uint256 price) public payable nonReentrant {
+    function createMarketItem(address nftContract, uint256 tokenId, uint256 price) 
+        public 
+        payable 
+        nonReentrant 
+    {
         require(price > 0, "Price must be at least 1 wei");
         require(msg.value == listingFee, "Please submit the listing fee");
 
@@ -80,15 +87,37 @@ contract NFTMarketplace is ReentrancyGuard {
             payable(msg.sender),
             payable(address(0)),
             price,
+            false,
             false
         );
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
-        emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, false);
+        emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, false, false);
     }
 
-    function createAuctionItem(address nftContract, uint256 tokenId, uint256 minBid) public payable nonReentrant {
+    function removeMarketItem(address nftContract, uint256 itemId) 
+        public 
+        payable 
+        nonReentrant 
+    {
+        uint256 tokenId = idToMarketItem[itemId].tokenId;
+        require(tokenId > 0, "Market item has to exist");
+        require(idToMarketItem[itemId].seller == msg.sender, "You are not the seller");
+
+        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+
+        idToMarketItem[itemId].owner = payable(msg.sender);
+        idToMarketItem[itemId].removed = true;
+
+        _itemsRemoved.increment();
+    }
+
+    function createAuctionItem(address nftContract, uint256 tokenId, uint256 minBid) 
+        public 
+        payable 
+        nonReentrant 
+    {
         require(minBid > 0, "Minimum bid must be greater than 0");
         require(msg.value == listingFee, "Please submit the listing fee");
 
