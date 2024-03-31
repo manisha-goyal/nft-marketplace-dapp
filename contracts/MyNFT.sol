@@ -72,6 +72,8 @@ contract MyNFT is ERC721URIStorage, Ownable {
         transferEligible[tokenId] = false;
     }
 
+    //override transferFrom to include royalty payment
+
     // Override for ERC721URIStorage
     function _burn(uint256 tokenId) internal override(ERC721URIStorage, ERC721) {
         super._burn(tokenId);

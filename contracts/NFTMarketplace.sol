@@ -69,6 +69,29 @@ contract NFTMarketplace is ReentrancyGuard {
         bool ended
     );
 
+    event MarketSaleCreated(
+        uint indexed itemId,
+        address indexed nftContract,
+        uint256 indexed tokenId,
+        address seller,
+        address buyer,
+        uint256 price
+    );
+
+    event BidPlaced(
+        uint indexed itemId,
+        address indexed bidder,
+        uint256 bidAmount,
+        uint256 auctionEndTime
+    );
+
+    event AuctionEnded(
+        uint indexed itemId,
+        address winner,
+        uint256 winningBid,
+        bool hadBids
+    );
+
     function createMarketItem(address nftContract, uint256 tokenId, uint256 price) 
         public 
         payable 
@@ -113,13 +136,14 @@ contract NFTMarketplace is ReentrancyGuard {
         _itemsRemoved.increment();
     }
 
-    function createAuctionItem(address nftContract, uint256 tokenId, uint256 minBid) 
+    function createAuctionItem(address nftContract, uint256 tokenId, uint256 minBid, uint256 auctionEndTime) 
         public 
         payable 
         nonReentrant 
     {
         require(minBid > 0, "Minimum bid must be greater than 0");
         require(msg.value == listingFee, "Please submit the listing fee");
+        require(auctionEndTime > block.timestamp, "Auction end time must be in the future");
 
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
@@ -131,16 +155,47 @@ contract NFTMarketplace is ReentrancyGuard {
             payable(msg.sender),
             minBid,
             payable(address(0)),
-            block.timestamp + 86400, // Auction ends in 24 hours
+            auctionEndTime,
             false
         );
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
-        emit AuctionItemCreated(itemId, nftContract, tokenId, msg.sender, minBid, address(0), block.timestamp + 86400, false);
+        emit AuctionItemCreated(itemId, nftContract, tokenId, msg.sender, minBid, address(0), auctionEndTime, false);
     }
 
-    function bidOnAuction(uint256 itemId) public payable nonReentrant {
+    function createMarketSale(address nftContract, uint256 itemId) 
+        public 
+        payable 
+        nonReentrant 
+    {
+        uint256 price = idToMarketItem[itemId].price;
+        uint256 tokenId = idToMarketItem[itemId].tokenId;
+        require(msg.value == price, "Please submit the asking price to complete the purchase");
+
+        idToMarketItem[itemId].seller.transfer(msg.value); // Transfer funds to seller
+        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId); // Transfer NFT to buyer
+        idToMarketItem[itemId].owner = payable(msg.sender);
+        idToMarketItem[itemId].sold = true;
+        _itemsSold.increment();
+
+        payable(owner).transfer(listingFee);
+
+        emit MarketSaleCreated(
+            itemId,
+            nftContract,
+            tokenId,
+            idToMarketItem[itemId].seller,
+            msg.sender,
+            price
+        );
+    }
+
+    function bidOnAuction(uint256 itemId) 
+        public 
+        payable 
+        nonReentrant 
+    {
         AuctionItem storage auction = idToAuctionItem[itemId];
         require(block.timestamp < auction.auctionEndTime, "Auction has ended");
         require(msg.value > auction.highestBid, "There is already a higher bid");
@@ -152,16 +207,26 @@ contract NFTMarketplace is ReentrancyGuard {
         auction.highestBid = msg.value;
         auction.highestBidder = payable(msg.sender);
 
-        // No event emitted for simplicity, but you should consider adding one for tracking bids
+        emit BidPlaced(
+            itemId,
+            msg.sender,
+            msg.value,
+            auction.auctionEndTime
+        );
     }
 
-    function endAuction(uint256 itemId) public nonReentrant {
+    function endAuction(uint256 itemId) 
+        public 
+        nonReentrant 
+    {
         AuctionItem storage auction = idToAuctionItem[itemId];
         require(block.timestamp >= auction.auctionEndTime, "Auction not yet ended");
         require(!auction.ended, "Auction end has already been called");
 
         auction.ended = true;
-        if (auction.highestBidder != address(0)) {
+        bool hadBids = auction.highestBidder != address(0);
+
+        if (hadBids) {
             IERC721(auction.nftContract).transferFrom(address(this), auction.highestBidder, auction.tokenId);
             auction.seller.transfer(auction.highestBid); // Pay the seller
         } else {
@@ -169,22 +234,34 @@ contract NFTMarketplace is ReentrancyGuard {
             IERC721(auction.nftContract).transferFrom(address(this), auction.seller, auction.tokenId);
         }
 
-        // Consider emitting an event for auction end
+        emit AuctionEnded(
+            itemId,
+            auction.highestBidder,
+            auction.highestBid,
+            hadBids
+        );
     }
 
-    function createMarketSale(address nftContract, uint256 itemId) public payable nonReentrant {
-        uint256 price = idToMarketItem[itemId].price;
-        uint256 tokenId = idToMarketItem[itemId].tokenId;
-        require(msg.value == price, "Please submit the asking price to complete the purchase");
+    function getAvailableMarketItems() 
+        public 
+        view 
+        returns (MarketItem[] memory) 
+    {
+        uint256 itemsCount = _itemIds.current();
+        uint256 soldItemsCount = _itemsSold.current();
+        uint256 removedItemsCount = _itemsRemoved.current();
+        uint256 availableItemsCount = itemsCount - soldItemsCount - removedItemsCount;
+        
+        MarketItem[] memory marketItems = new MarketItem[](availableItemsCount);
+        uint256 currentIndex = 0;
+        for (uint256 i = 0; i < itemsCount; i++) {
+            MarketItem memory item = idToMarketItem[i + 1];
+            if (item.owner != address(0)) 
+                continue;
+            marketItems[currentIndex] = item;
+            currentIndex += 1;
+        }
 
-        idToMarketItem[itemId].seller.transfer(msg.value); // Transfer funds to seller
-        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId); // Transfer NFT to buyer
-        idToMarketItem[itemId].owner = payable(msg.sender);
-        idToMarketItem[itemId].sold = true;
-        _itemsSold.increment();
-
-        // Optionally, emit an event for the sale
+        return marketItems;
     }
-
-    // Additional functions such as withdrawListingFee, updateListingFee, etc., can be added for marketplace management
 }
