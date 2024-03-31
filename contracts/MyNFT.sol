@@ -18,8 +18,15 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
 
     event TokenMinted(uint256 indexed tokenId, string tokenURI, address marketplaceAddress);
 
-    constructor(address _marketplaceAddress) ERC721("MyNFT", "MNFT") {
+    constructor() ERC721("MyNFT", "MNFT") {
+    }
+
+    function setMarketplaceAddress(address _marketplaceAddress) 
+        public 
+        onlyOwner 
+    {
         marketplaceAddress = _marketplaceAddress;
+        setApprovalForAll(marketplaceAddress, true);
     }
 
     function mintNFT(address recipient, string memory tokenURI, uint256 royalty)
@@ -34,8 +41,6 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
 
         tokenRoyalties[newItemId] = royalty;
         transferEligible[newItemId] = true;
-
-        setApprovalForAll(marketplaceAddress, true);
 
         emit TokenMinted(newItemId, tokenURI, marketplaceAddress);
         return newItemId;
@@ -93,7 +98,7 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
 
     function transferFrom(address from, address to, uint256 tokenId) 
         public 
-        override
+        override(IERC721, ERC721)
     {
         require(transferEligible[tokenId], "This token is not eligible for transfer");
         super.transferFrom(from, to, tokenId);
@@ -101,17 +106,8 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
 
     function _burn(uint256 tokenId) 
         internal
-        override(ERC721URIStorage, ERC721) 
+        override(ERC721URIStorage) 
     {
         super._burn(tokenId);
-    }
-
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        override(ERC721, ERC721URIStorage)
-        returns (string memory)
-    {
-        return super.tokenURI(tokenId);
     }
 }
