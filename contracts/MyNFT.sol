@@ -66,6 +66,13 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
         transferEligible[tokenId] = false;
     }
 
+    function isTransferEligible(uint256 tokenId)
+        external
+        view
+        returns(bool isEligible) {
+        return transferEligible[tokenId];
+    }
+
     function updateTokenRoyalty(uint256 tokenId, uint256 royalty) 
         public 
         onlyOwner
@@ -84,9 +91,18 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
         return (ownerOf(tokenId), (salePrice * royalty) / 10000);
     }
 
-    //override transferFrom to include royalty payment
+    function transferFrom(address from, address to, uint256 tokenId) 
+        public 
+        override
+    {
+        require(transferEligible[tokenId], "This token is not eligible for transfer");
+        super.transferFrom(from, to, tokenId);
+    }
 
-    function _burn(uint256 tokenId) internal override(ERC721URIStorage, ERC721) {
+    function _burn(uint256 tokenId) 
+        internal
+        override(ERC721URIStorage, ERC721) 
+    {
         super._burn(tokenId);
     }
 
