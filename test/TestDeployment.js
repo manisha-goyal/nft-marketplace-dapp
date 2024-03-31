@@ -20,13 +20,13 @@ contract("Deployment", accounts => {
     assert.equal(symbol, "MNFT", "The NFT symbol is not correct");
   });
 
-  it("has marketplace", async () => {
+  it("NFT has marketplace", async () => {
     const marketplaceAddress = await myNftInstance.getMarketplaceAddress();
     assert.equal(marketplaceAddress, marketplaceInstance.address, "The NFT does not have a marketplace");
   });
 
-  it("the deployer is the owner", async () => {
-    const owner = await myNftInstance.owner();
-    assert.equal(owner, accounts[0], "The deployer is not the owner");
+  it("the deployer is the marketplace owner", async () => {
+    const owner = await marketplaceInstance.getMarketplaceOwner();
+    assert.equal(owner, accounts[0], "The deployer is not the marketplace owner");
   });
 });
