@@ -2,18 +2,17 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract MyNFT is ERC721URIStorage, Ownable {
+contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
-    // Mapping to keep track of token transfer eligibility
     mapping(uint256 => bool) public transferEligible;
 
-    // Mapping for token royalties
-    mapping(uint256 => uint) public tokenRoyalties;
+    mapping(uint256 => uint256) public tokenRoyalties;
 
     address private marketplaceAddress;
 
@@ -23,8 +22,7 @@ contract MyNFT is ERC721URIStorage, Ownable {
         marketplaceAddress = _marketplaceAddress;
     }
 
-    // Minting function with royalty and transfer eligibility option
-    function mintNFT(address recipient, string memory tokenURI, uint royalty)
+    function mintNFT(address recipient, string memory tokenURI, uint256 royalty)
         public
         onlyOwner
         returns (uint256)
@@ -34,9 +32,8 @@ contract MyNFT is ERC721URIStorage, Ownable {
         _mint(recipient, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
-        // Set royalty and transfer eligibility for the new token
         tokenRoyalties[newItemId] = royalty;
-        transferEligible[newItemId] = true; // Tokens are transferable by default
+        transferEligible[newItemId] = true;
 
         setApprovalForAll(marketplaceAddress, true);
 
@@ -44,8 +41,7 @@ contract MyNFT is ERC721URIStorage, Ownable {
         return newItemId;
     }
 
-    // Batch minting function
-    function mintMultipleNFTs(address[] memory recipient, string[] memory tokenURIs, uint[] memory royalties)
+    function mintMultipleNFTs(address[] memory recipient, string[] memory tokenURIs, uint256[] memory royalties)
         public
         onlyOwner
     {
@@ -56,7 +52,6 @@ contract MyNFT is ERC721URIStorage, Ownable {
         }
     }
 
-    // Function to enable transfer for a token
     function enableTransfer(uint256 tokenId) 
         public 
         onlyOwner 
@@ -64,7 +59,6 @@ contract MyNFT is ERC721URIStorage, Ownable {
         transferEligible[tokenId] = true;
     }
 
-    // Function to disable transfer for a token
     function disableTransfer(uint256 tokenId) 
         public 
         onlyOwner 
@@ -72,14 +66,30 @@ contract MyNFT is ERC721URIStorage, Ownable {
         transferEligible[tokenId] = false;
     }
 
+    function updateTokenRoyalty(uint256 tokenId, uint256 royalty) 
+        public 
+        onlyOwner
+    {
+        require(_exists(tokenId), "Nonexistent token");
+        tokenRoyalties[tokenId] = royalty;
+    }
+
+    function royaltyInfo(uint256 tokenId, uint256 salePrice) 
+        external 
+        view 
+        override 
+        returns (address receiver, uint256 royaltyAmount) 
+    {
+        uint256 royalty = tokenRoyalties[tokenId];
+        return (ownerOf(tokenId), (salePrice * royalty) / 10000);
+    }
+
     //override transferFrom to include royalty payment
 
-    // Override for ERC721URIStorage
     function _burn(uint256 tokenId) internal override(ERC721URIStorage, ERC721) {
         super._burn(tokenId);
     }
 
-    // Override for ERC721URIStorage
     function tokenURI(uint256 tokenId)
         public
         view
