@@ -3,9 +3,7 @@ const NFTMarketplace = artifacts.require("NFTMarketplace");
 
 module.exports = async function(deployer) {
     await deployer.deploy(NFTMarketplace);
-
     const marketplaceInstance = await NFTMarketplace.deployed();
-
-    const nftInstance = await MyNFT.deployed();
-    await nftInstance.setMarketplaceAddress(marketplaceInstance.address);
+    
+    await deployer.deploy(MyNFT, marketplaceInstance.address);
 };

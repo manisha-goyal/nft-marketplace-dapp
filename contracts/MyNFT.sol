@@ -18,15 +18,8 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
 
     event TokenMinted(uint256 indexed tokenId, string tokenURI, address marketplaceAddress);
 
-    constructor() ERC721("MyNFT", "MNFT") {
-    }
-
-    function setMarketplaceAddress(address _marketplaceAddress) 
-        public 
-        onlyOwner 
-    {
+    constructor(address _marketplaceAddress) ERC721("MyNFTManisha", "MANISHA") {
         marketplaceAddress = _marketplaceAddress;
-        setApprovalForAll(marketplaceAddress, true);
     }
 
     function mintNFT(address recipient, string memory tokenURI, uint256 royalty)
@@ -41,6 +34,8 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
 
         tokenRoyalties[newItemId] = royalty;
         transferEligible[newItemId] = true;
+
+        setApprovalForAll(marketplaceAddress, true);
 
         emit TokenMinted(newItemId, tokenURI, marketplaceAddress);
         return newItemId;
@@ -109,5 +104,13 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
         override(ERC721URIStorage) 
     {
         super._burn(tokenId);
+    }
+
+    function getMarketplaceAddress() 
+        external 
+        view 
+        returns (address marketplace) 
+    {
+        return marketplaceAddress;
     }
 }

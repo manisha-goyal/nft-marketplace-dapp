@@ -1,16 +1,20 @@
 const MyNFT = artifacts.require("MyNFT");
+const NFTMarketplace = artifacts.require("NFTMarketplace");
 
 contract("MyNFT", accounts => {
-  it("should mint an NFT to the first account", async () => {
-    const instance = await MyNFT.deployed();
-    const receipt = await instance.mintNFT(accounts[0], "https://mytokenlocation.com", 100, { from: accounts[0] });
-    
-    assert.equal(
-      await instance.ownerOf(1),
-      accounts[0],
-      "The first account should own the minted NFT"
-    );
-  });
+	let myNftInstance;
+  let marketplaceInstance;
 
-  // Add more tests here
+	before(async () => {
+		marketplaceInstance = await NFTMarketplace.deployed();
+    myNftInstance = await MyNFT.deployed();
+	});
+
+	it("should mint an NFT to the first account", async () => {
+		const newItemId = await myNftInstance.mintNFT(accounts[1], "test", 100, {from: accounts[0]});    
+		const tokenId = newItemId.logs[0].args.tokenId.toNumber();
+		
+		const owner = await myNftInstance.ownerOf(tokenId);
+		assert.equal(owner, accounts[1], "The account[1] should own the minted NFT");
+	});
 });
