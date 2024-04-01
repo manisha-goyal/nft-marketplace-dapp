@@ -1,15 +1,12 @@
 const MyNFT = artifacts.require("MyNFT");
-const NFTMarketplace = artifacts.require("NFTMarketplace");
 
 contract("MyNFT", accounts => {
     let myNftInstance;
-    let marketplaceInstance;
 
     const tokenURI = "https://example.com/nft.json";
     const royalty = 100;
 
     before(async () => {
-        marketplaceInstance = await NFTMarketplace.deployed();
         myNftInstance = await MyNFT.deployed();
     });
 
