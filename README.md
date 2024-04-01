@@ -27,7 +27,7 @@ This section will guide you through setting up the project on your local machine
 ### Prerequisites
 
 - Node.js
-- Truffle or Hardhat
+- Truffle
 - An Ethereum wallet
 
 ### Installing

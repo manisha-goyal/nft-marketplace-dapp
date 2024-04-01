@@ -251,6 +251,9 @@ contract NFTMarketplace is ReentrancyGuard {
             (bool proceedsSuccess, ) = auction.seller.call{value: sellerProceeds}("");
             require(proceedsSuccess, "Failed to send seller proceeds");
             IERC721(auction.nftContract).transferFrom(address(this), auction.highestBidder, auction.tokenId);
+
+            (bool listingFeeSuccess, ) = payable(owner).call{value: listingFee}("");
+            require(listingFeeSuccess, "Failed to send listing fee");
         } else {
             IERC721(auction.nftContract).transferFrom(address(this), auction.seller, auction.tokenId);
         }
