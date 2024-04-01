@@ -29,31 +29,24 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("completes a market sale", async () => {
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft1.json", 100, { from: accounts[0] });
+        const tokenId = newItemId.logs[0].args.tokenId.toNumber();
+
+        const listingFee = await marketplaceInstance.getMarketplaceListingFee();
+        const marketPlaceItemId = await marketplaceInstance.createMarketItem(myNftInstance.address, tokenId, web3.utils.toWei('1', 'ether'), { from: accounts[0], value: listingFee });
+
         const balanceBefore = await web3.eth.getBalance(accounts[1]);
         const balance = web3.utils.fromWei(balanceBefore, 'ether');
 
         assert(parseFloat(balance) > 1, "Account does not have enough Ether");
 
-        const itemId = 1;
+        const itemId = marketPlaceItemId.logs[0].args.itemId.toNumber();
         const item = await marketplaceInstance.getMarketItemById(itemId);
         const itemPrice = item.price;
 
         const royaltyInfo = await myNftInstance.royaltyInfo(1, 1000);
 		assert.equal(royaltyInfo.royaltyAmount.toNumber(), 10, "The royalty amount is incorrect");
 		assert.equal(royaltyInfo.receiver, accounts[0], "The royalty receiver is incorrect");
-
-        /*const transaction = marketplaceInstance.contract.methods.createMarketSale(myNftInstance.address, itemId).encodeABI();
-        const sendParams = { from: accounts[0], value: itemPrice, to: marketplaceInstance.address, data: transaction };
-        await web3.eth.sendTransaction(sendParams);
-        /*try {
-            await web3.eth.sendTransaction(sendParams);
-        } catch (error) {
-            console.log("Error:", error);
-            if (error && error.hijackedStack) {
-                const revertReason = error.hijackedStack.match(/revert (.*)/)[1];
-                console.log("Revert Reason:", revertReason);
-            }
-        }*/
     
         await marketplaceInstance.createMarketSale(myNftInstance.address, itemId, { from: accounts[1], value: itemPrice });
     
@@ -63,7 +56,7 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("creates and bids on an auction item", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft2.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft3.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();;
 
         const auctionEndTime = (await web3.eth.getBlock('latest')).timestamp + 86400; // 24 hours from now
@@ -77,6 +70,49 @@ contract("NFTMarketplace", (accounts) => {
         const auction = await marketplaceInstance.getAuctionItemById(itemId);
         assert.equal(auction.highestBid.toString(), web3.utils.toWei('1', 'ether'), "Bid amount does not match");
         assert.equal(auction.highestBidder, accounts[1], "Bidder address does not match");
+    });
+
+    it("allows a seller to remove a listed item before sale", async () => {
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft4.json", 100, { from: accounts[0] });
+        const tokenId = newItemId.logs[0].args.tokenId.toNumber();
+        const listingFee = await marketplaceInstance.getMarketplaceListingFee();
+    
+        const marketPlaceItemId = await marketplaceInstance.createMarketItem(myNftInstance.address, tokenId, web3.utils.toWei('1', 'ether'), { from: accounts[0], value: listingFee });
+        const itemId = marketPlaceItemId.logs[0].args.itemId.toNumber();
+    
+        await marketplaceInstance.removeMarketItem(myNftInstance.address, itemId, { from: accounts[0] });
+    
+        const removedItem = await marketplaceInstance.getMarketItemById(itemId);
+        assert.equal(removedItem.removed, true, "Item should be marked as removed");
+    });
+    
+    it("ends an auction correctly and transfers ownership", async () => {
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft5.json", 100, { from: accounts[0] });
+        const tokenId = newItemId.logs[0].args.tokenId.toNumber();
+        const auctionEndTime = (await web3.eth.getBlock('latest')).timestamp + 86400;
+        const listingFee = await marketplaceInstance.getMarketplaceListingFee();
+        const marketPlaceItemId = await marketplaceInstance.createAuctionItem(myNftInstance.address, tokenId, web3.utils.toWei('0.5', 'ether'), auctionEndTime, { from: accounts[0], value: listingFee });
+        const itemId = marketPlaceItemId.logs[0].args.itemId.toNumber();
+        await marketplaceInstance.bidOnAuction(itemId, { from: accounts[1], value: web3.utils.toWei('1', 'ether') });
+    
+        await marketplaceInstance.endAuction(itemId, { from: accounts[0] });
+    
+        const auction = await marketplaceInstance.getAuctionItemById(itemId);
+        assert.equal(auction.ended, true, "Auction should be marked as ended");
+        const newOwner = await myNftInstance.ownerOf(tokenId);
+        assert.equal(newOwner, accounts[1], "Ownership was not transferred to the highest bidder");
+    });
+    
+    it("fails to create a market item without listing fee", async () => {
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft6.json", 100, { from: accounts[0] });
+        const tokenId = newItemId.logs[0].args.tokenId.toNumber();
+    
+        try {
+            await marketplaceInstance.createMarketItem(myNftInstance.address, tokenId, web3.utils.toWei('1', 'ether'), { from: accounts[0] });
+            assert.fail("Expected transaction to fail without listing fee");
+        } catch (error) {
+            assert(error.message.indexOf("revert") >= 0, "Expected revert error");
+        }
     });
     
 });
