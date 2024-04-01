@@ -106,7 +106,8 @@ contract("NFTMarketplace", (accounts) => {
         const itemId = marketPlaceItemId.logs[0].args.itemId.toNumber();
         await marketplaceInstance.bidOnAuction(itemId, { from: accounts[1], value: web3.utils.toWei('1', 'ether') });
     
-        await marketplaceInstance.endAuction(itemId, { from: accounts[0] });
+        const marketplaceOwner = await marketplaceInstance.getMarketplaceOwner();
+        await marketplaceInstance.endAuction(itemId, { from: marketplaceOwner });
     
         const auction = await marketplaceInstance.getAuctionItemById(itemId);
         assert.equal(auction.ended, true, "Auction should be marked as ended");
@@ -163,7 +164,8 @@ contract("NFTMarketplace", (accounts) => {
         const secondBidAmount = web3.utils.toWei('1.5', 'ether');
         await marketplaceInstance.bidOnAuction(itemId, { from: accounts[2], value: secondBidAmount });
 
-        await marketplaceInstance.endAuction(itemId, { from: accounts[0] });
+        const marketplaceOwner = await marketplaceInstance.getMarketplaceOwner();
+        await marketplaceInstance.endAuction(itemId, { from: marketplaceOwner });
     
         const auction = await marketplaceInstance.getAuctionItemById(itemId);
         assert.equal(auction.ended, true, "Auction should be marked as ended");

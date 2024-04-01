@@ -258,6 +258,7 @@ contract NFTMarketplace is ReentrancyGuard {
 
     function endAuction(uint256 itemId) public nonReentrant {
         AuctionItem storage auction = idToAuctionItem[itemId];
+        require(owner == msg.sender, "Only markeplace owner can end the auction");
         require(!auction.ended, "Auction end has already been called");
 
         auction.ended = true;
