@@ -25,7 +25,7 @@ contract("NFTMarketplace", (accounts) => {
         assert.equal(item.seller, accounts[0], "Token seller is not account[0]");
         assert.equal(owner, marketplaceInstance.address, "Token owner is not the marketplace owner");
         assert.equal(item.price.toString(), web3.utils.toWei('1', 'ether'), "Price does not match");
-        assert.equal(item.sold, false, "Item should not be sold yet");
+        assert.equal(item.sold, false, "NFT should not be sold yet");
     });
 
     it("completes a market sale", async () => {
@@ -51,11 +51,11 @@ contract("NFTMarketplace", (accounts) => {
         await marketplaceInstance.createMarketSale(myNftInstance.address, itemId, { from: accounts[1], value: itemPrice });
     
         const updatedItem = await marketplaceInstance.getMarketItemById(itemId);
-        assert.equal(updatedItem.sold, true, "Item should be marked as sold");
+        assert.equal(updatedItem.sold, true, "NFT should be marked as sold");
         assert.equal(updatedItem.owner, accounts[1], "Ownership was not transferred after sale");
     });
 
-    it("creates and bids on an auction item", async () => {
+    it("creates and bids on an auction NFT", async () => {
         const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft3.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();;
 
@@ -72,7 +72,13 @@ contract("NFTMarketplace", (accounts) => {
         assert.equal(auction.highestBidder, accounts[1], "Bidder address does not match");
     });
 
-    it("allows a seller to remove a listed item before sale", async () => {
+    it("fetches available auction NFTs", async () => {
+        let availableItems = await marketplaceInstance.getAvailableAuctionItems();
+        assert.equal(availableItems.length, 1, "Should fetch one auction NFT");
+        assert.equal(availableItems[0], 3, "Should fetch correct auction NFT")
+    });
+
+    it("allows a seller to remove a listed NFT before sale", async () => {
         const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft4.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
         const listingFee = await marketplaceInstance.getMarketplaceListingFee();
@@ -83,12 +89,12 @@ contract("NFTMarketplace", (accounts) => {
         await marketplaceInstance.removeMarketItem(myNftInstance.address, itemId, { from: accounts[0] });
     
         const removedItem = await marketplaceInstance.getMarketItemById(itemId);
-        assert.equal(removedItem.removed, true, "Item should be marked as removed");
+        assert.equal(removedItem.removed, true, "NFT should be marked as removed");
     });
 
-    it("fetches only available market items", async () => {
+    it("fetches only available market NFTs", async () => {
         let availableItems = await marketplaceInstance.getAvailableMarketItems();
-        assert.equal(availableItems.length, 2, "Should only fetch one available market item");
+        assert.equal(availableItems.length, 2, "Should only fetch one available market NFT");
     });
     
     it("ends an auction correctly and transfers ownership", async () => {
@@ -108,7 +114,7 @@ contract("NFTMarketplace", (accounts) => {
         assert.equal(newOwner, accounts[1], "Ownership was not transferred to the highest bidder");
     });
     
-    it("fails to create a market item without listing fee", async () => {
+    it("fails to create a market NFT without listing fee", async () => {
         const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft6.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
     
@@ -120,7 +126,7 @@ contract("NFTMarketplace", (accounts) => {
         }
     });
 
-    it("correctly handles multiple bids on an auction item and refunds the previous highest bidder", async () => {
+    it("correctly handles multiple bids on an auction NFT and refunds the previous highest bidder", async () => {
         const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft7.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();;
 
@@ -143,7 +149,7 @@ contract("NFTMarketplace", (accounts) => {
         assert(finalBalance > initialBalance, "Previous highest bidder was not refunded correctly");
     });
     
-    it("ends an auction correctly and transfers ownership with multiple bids on an auction item", async () => {
+    it("ends an auction correctly and transfers ownership with multiple bids on an auction NFT", async () => {
         const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft8.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();;
 
@@ -165,7 +171,7 @@ contract("NFTMarketplace", (accounts) => {
         assert.equal(newOwner, accounts[2], "Ownership was not transferred to the highest bidder");
     });
 
-    it("prevents buying a sold market item", async () => {
+    it("prevents buying a sold market NFT", async () => {
         const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft9.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
 
@@ -180,9 +186,9 @@ contract("NFTMarketplace", (accounts) => {
     
         try {
             await marketplaceInstance.createMarketSale(myNftInstance.address, itemId, { from: accounts[2], value: itemPrice });
-            assert.fail("Expected transaction to fail for buying a sold item");
+            assert.fail("Expected transaction to fail for buying a sold NFT");
         } catch (error) {
-            assert(error.message.indexOf("revert") >= 0, "Expected revert error for buying a sold item");
+            assert(error.message.indexOf("revert") >= 0, "Expected revert error for buying a sold NFT");
         }
     });
 
