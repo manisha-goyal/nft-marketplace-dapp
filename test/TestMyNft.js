@@ -61,7 +61,7 @@ contract("MyNFT", accounts => {
         const newItemId = await myNftInstance.mintNFT(accounts[1], tokenURI, royalty, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
 
-        await myNftInstance.disableTransfer(tokenId, { from: accounts[0] });
+        await myNftInstance.disableTransfer(tokenId, { from: accounts[1] });
 
         try {
             await myNftInstance.transferFrom(accounts[1], accounts[2], tokenId, { from: accounts[1] });
@@ -75,11 +75,11 @@ contract("MyNFT", accounts => {
 		const newItemId = await myNftInstance.mintNFT(accounts[1], tokenURI, royalty, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
 
-		await myNftInstance.disableTransfer(tokenId, { from: accounts[0] });
+		await myNftInstance.disableTransfer(tokenId, { from: accounts[1] });
 		let transferEligible = await myNftInstance.transferEligible(tokenId);
 		assert.equal(transferEligible, false, "Transfer should be disabled");
 	
-		await myNftInstance.enableTransfer(tokenId, { from: accounts[0] });
+		await myNftInstance.enableTransfer(tokenId, { from: accounts[1] });
 		transferEligible = await myNftInstance.transferEligible(tokenId);
 		assert.equal(transferEligible, true, "Transfer should be enabled");
 	});

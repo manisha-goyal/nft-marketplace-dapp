@@ -26,6 +26,11 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
         address marketplaceAddress
     );
 
+    modifier onlyNFTOwner(uint256 tokenId) {
+        require(msg.sender == ownerOf(tokenId), "Caller is not the NFT owner");
+        _;
+    }
+
     constructor(address _marketplaceAddress) ERC721("MyNFT", "MNFT") {
         marketplaceAddress = _marketplaceAddress;
     }
@@ -71,11 +76,12 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
         }
     }
 
-    function enableTransfer(uint256 tokenId) public onlyOwner {
+    function enableTransfer(uint256 tokenId) public onlyNFTOwner(tokenId) {
+
         transferEligible[tokenId] = true;
     }
 
-    function disableTransfer(uint256 tokenId) public onlyOwner {
+    function disableTransfer(uint256 tokenId) public onlyNFTOwner(tokenId) {
         transferEligible[tokenId] = false;
     }
 
@@ -83,14 +89,6 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
         uint256 tokenId
     ) external view returns (bool isEligible) {
         return transferEligible[tokenId];
-    }
-
-    function updateTokenRoyalty(
-        uint256 tokenId,
-        uint256 royalty
-    ) public onlyOwner {
-        require(_exists(tokenId), "Nonexistent token");
-        tokenRoyalties[tokenId] = royalty;
     }
 
     function royaltyInfo(
