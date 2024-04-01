@@ -97,6 +97,10 @@ contract NFTMarketplace is ReentrancyGuard {
     ) public payable nonReentrant returns (uint256) {
         require(price > 0, "Price must be at least 1 wei");
         require(msg.value == listingFee, "Please submit the listing fee");
+        require(
+            msg.sender == IERC721(nftContract).ownerOf(tokenId),
+            "Caller is not the NFT owner"
+        );
 
         _itemIds.increment();
         uint256 itemId = _itemIds.current();
@@ -132,10 +136,10 @@ contract NFTMarketplace is ReentrancyGuard {
         uint256 itemId
     ) public payable nonReentrant {
         uint256 tokenId = idToMarketItem[itemId].tokenId;
-        require(tokenId > 0, "Market item has to exist");
+        require(tokenId > 0, "Market item does not exist");
         require(
             idToMarketItem[itemId].seller == msg.sender,
-            "You are not the seller"
+            "Caller is not the NFT owner"
         );
 
         IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
@@ -155,6 +159,10 @@ contract NFTMarketplace is ReentrancyGuard {
         require(
             auctionEndTime > block.timestamp,
             "Auction end time must be in the future"
+        );
+        require(
+            msg.sender == IERC721(nftContract).ownerOf(tokenId),
+            "Caller is not the NFT owner"
         );
 
         _itemIds.increment();
@@ -205,7 +213,7 @@ contract NFTMarketplace is ReentrancyGuard {
             (bool royaltySuccess, ) = payable(royaltyReceiver).call{
                 value: royaltyAmount
             }("");
-            require(royaltySuccess, "Failed to send royalty");
+            require(royaltySuccess, "Failed to send royalty to creator");
         }
 
         uint256 sellerProceeds = price - royaltyAmount;
@@ -246,7 +254,7 @@ contract NFTMarketplace is ReentrancyGuard {
             }("");
             require(
                 returnBidSuccess,
-                "Failed to return previous highest bidder proceeds"
+                "Failed to return bid to previous highest bidder"
             );
         }
 
@@ -258,7 +266,7 @@ contract NFTMarketplace is ReentrancyGuard {
 
     function endAuction(uint256 itemId) public nonReentrant {
         AuctionItem storage auction = idToAuctionItem[itemId];
-        require(owner == msg.sender, "Only markeplace owner can end the auction");
+        require(msg.sender == owner, "Caller is not the marketplace owner");
         require(!auction.ended, "Auction end has already been called");
 
         auction.ended = true;
@@ -279,7 +287,7 @@ contract NFTMarketplace is ReentrancyGuard {
                 (bool royaltySuccess, ) = payable(royaltyReceiver).call{
                     value: royaltyAmount
                 }("");
-                require(royaltySuccess, "Failed to send royalty");
+                require(royaltySuccess, "Failed to send royalty to creator");
             }
 
             (bool proceedsSuccess, ) = auction.seller.call{

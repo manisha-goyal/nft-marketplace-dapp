@@ -77,7 +77,6 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
     }
 
     function enableTransfer(uint256 tokenId) public onlyNFTOwner(tokenId) {
-
         transferEligible[tokenId] = true;
     }
 
