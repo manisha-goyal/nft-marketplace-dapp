@@ -48,13 +48,20 @@ contract("MyNFT", accounts => {
 		assert(tokenId3 > tokenId2, "Token ID did not increase after minting another new NFT");
 	});
 
-    it("should allow transfer if eligible", async () => {
+    it("should only allow transfer if eligible", async () => {
         const newItemId = await myNftInstance.mintNFT(accounts[1], tokenURI, royalty, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
 
         await myNftInstance.transferFrom(accounts[1], accounts[2], tokenId, { from: accounts[1] });
         const newOwner = await myNftInstance.ownerOf(tokenId);
         assert.equal(newOwner, accounts[2], "NFT transfer did not occur correctly");
+
+		try {
+            await myNftInstance.transferFrom(accounts[1], accounts[2], tokenId, { from: accounts[1] });
+            assert.fail("The transfer should have failed but didn't.");
+        } catch (error) {
+            assert.include(error.message, "revert", "Expected transfer to revert due to ineligibility");
+        }
     });
 
     it("should not allow transfer if not eligible", async () => {
@@ -82,6 +89,13 @@ contract("MyNFT", accounts => {
 		await myNftInstance.enableTransfer(tokenId, { from: accounts[1] });
 		transferEligible = await myNftInstance.transferEligible(tokenId);
 		assert.equal(transferEligible, true, "Transfer should be enabled");
+
+		try {
+            await myNftInstance.disableTransfer(tokenId, { from: accounts[2] });
+			assert.fail("Caller is not the NFT owner");
+        } catch (error) {
+            assert.include(error.message, "revert", "Expected transaction to revert due to ineligibility");
+        }
 	});
 
 	it("should mint multiple NFTs correctly", async () => {
