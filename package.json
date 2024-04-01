@@ -6,7 +6,8 @@
   "scripts": {
     "compile": "truffle compile",
     "migrate": "truffle migrate",
-    "test": "truffle test"
+    "test": "truffle test",
+    "start": "node src/index.js"
   },
   "author": "Manisha Goyal",
   "license": "MIT",
@@ -16,6 +17,8 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.0",
+    "@truffle/contract": "^4.6.31",
+    "dotenv": "^16.4.5",
     "solc": "^0.8.0"
   }
 }
