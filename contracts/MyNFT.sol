@@ -10,6 +10,8 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
+    mapping(uint256 => address) private nftCreators;
+
     mapping(uint256 => bool) public transferEligible;
 
     mapping(uint256 => uint256) public tokenRoyalties;
@@ -32,6 +34,7 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
         _mint(recipient, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
+        nftCreators[newItemId] = recipient;
         tokenRoyalties[newItemId] = royalty;
         transferEligible[newItemId] = true;
 
@@ -88,7 +91,7 @@ contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
         returns (address receiver, uint256 royaltyAmount) 
     {
         uint256 royalty = tokenRoyalties[tokenId];
-        return (ownerOf(tokenId), (salePrice * royalty) / 10000);
+        return (nftCreators[tokenId], (salePrice * royalty) / 10000);
     }
 
     function transferFrom(address from, address to, uint256 tokenId) 

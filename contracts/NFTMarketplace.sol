@@ -96,6 +96,7 @@ contract NFTMarketplace is ReentrancyGuard {
         public 
         payable 
         nonReentrant 
+        returns (uint256)
     {
         require(price > 0, "Price must be at least 1 wei");
         require(msg.value == listingFee, "Please submit the listing fee");
@@ -116,7 +117,8 @@ contract NFTMarketplace is ReentrancyGuard {
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
-        emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, false, false);
+        emit MarketItemCreated(itemId, nftContract, tokenId, payable(msg.sender), payable(address(0)), price, false, false);
+        return itemId;
     }
 
     function removeMarketItem(address nftContract, uint256 itemId) 
@@ -173,20 +175,23 @@ contract NFTMarketplace is ReentrancyGuard {
         uint256 tokenId = idToMarketItem[itemId].tokenId;
         require(msg.value == price, "Please submit the asking price to complete the purchase");
 
-        (address royaltyReceiver, uint256 royaltyAmount) = IERC2981(nftContract).royaltyInfo(tokenId, price);
+        (, uint256 royaltyAmount) = IERC2981(nftContract).royaltyInfo(tokenId, price);
         require(royaltyAmount <= price, "Royalty exceeds sale price");
 
         if (royaltyAmount > 0) {
-            payable(royaltyReceiver).transfer(royaltyAmount);
+            (bool royaltySuccess, ) = payable(idToMarketItem[itemId].seller).call{value: royaltyAmount}("");
+            require(royaltySuccess, "Failed to send royalty");
         }
 
         uint256 sellerProceeds = price - royaltyAmount;
 
-        payable(idToMarketItem[itemId].seller).transfer(sellerProceeds);
-        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
-
         idToMarketItem[itemId].owner = payable(msg.sender);
         idToMarketItem[itemId].sold = true;
+
+        (bool proceedsSuccess, ) = idToMarketItem[itemId].seller.call{value: sellerProceeds}("");
+        require(proceedsSuccess, "Failed to send seller proceeds");
+        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+        
         _itemsSold.increment();
 
         payable(owner).transfer(listingFee);
@@ -196,7 +201,7 @@ contract NFTMarketplace is ReentrancyGuard {
             nftContract,
             tokenId,
             idToMarketItem[itemId].seller,
-            msg.sender,
+            payable(msg.sender),
             sellerProceeds
         );
     }
@@ -284,11 +289,35 @@ contract NFTMarketplace is ReentrancyGuard {
         return marketItems;
     }
 
+    function getMarketItemById(uint256 itemId) 
+        public 
+        view 
+        returns (MarketItem memory item) 
+    {
+        return idToMarketItem[itemId];
+    }
+
+    function getAuctionItemById(uint256 itemId) 
+        public 
+        view 
+        returns (AuctionItem memory item) 
+    {
+        return idToAuctionItem[itemId];
+    }
+
     function getMarketplaceOwner() 
         external 
         view 
         returns (address marketplaceOwner) 
     {
         return owner;
+    }
+
+    function getMarketplaceListingFee() 
+        external 
+        view 
+        returns (uint256 fee) 
+    {
+        return listingFee;
     }
 }
