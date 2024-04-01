@@ -21,7 +21,7 @@ app.post('/api/nft/mint', async (req, res) => {
     }
 });
 
-app.post('/api/nft/getNft', async (req, res) => {
+app.post('/api/nft/retrieve', async (req, res) => {
     const { tokenId } = req.body;
 
     try {
