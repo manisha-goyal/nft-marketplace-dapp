@@ -1,13 +1,13 @@
-const MyNFT = artifacts.require("MyNFT");
+const NFT = artifacts.require("NFT");
 
-contract("MyNFT", accounts => {
+contract("NFT", accounts => {
     let myNftInstance;
 
     const tokenURI = "https://example.com/nft.json";
     const royalty = 100;
 
     before(async () => {
-        myNftInstance = await MyNFT.deployed();
+        myNftInstance = await NFT.deployed();
     });
 
     it("should mint an NFT to the first account", async () => {

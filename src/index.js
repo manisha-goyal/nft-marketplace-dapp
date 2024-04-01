@@ -6,7 +6,6 @@ const {
     batchMintNFTs,
     enableNFTTransfer,
     disableNFTTransfer,
-    updateTokenRoyalty,
     getRoyaltyInfo,
     getAvailableMarketNFTs,
     getAvailableAuctionNFTs,
@@ -87,21 +86,10 @@ app.post('/api/nft/disable-nft-transfer', async (req, res) => {
     }
 });
 
-app.post('/api/nft/update-nft-royalty', async (req, res) => {
-    const { tokenId, newRoyalty } = req.body;
-    try {
-        const receipt = await updateTokenRoyalty(tokenId, newRoyalty);
-        res.json({ message: 'Token royalty updated successfully', transactionReceipt: receipt });
-    } catch (error) {
-        console.error('Error updating token royalty:', error);
-        res.status(500).json({ error: 'Error updating token royalty' });
-    }
-});
-
 app.post('/api/nft/royalty-info', async (req, res) => {
     const { tokenId, salePrice } = req.body;
     try {
-        const royaltyInfo = await getRoyaltyInfo(tokenId, salePrice); // Assuming a sale price of 1 ether as example
+        const royaltyInfo = await getRoyaltyInfo(tokenId, salePrice);
         res.json({
             tokenId: tokenId,
             royaltyAmount: royaltyInfo.royaltyAmount,
@@ -144,9 +132,9 @@ app.get('/api/marketplace/marketplace-listing-fee', async (req, res) => {
 });
 
 app.post('/api/marketplace/list-nft-on-marketplace', async (req, res) => {
-    const { itemId, price, seller } = req.body;
+    const { itemId, price } = req.body;
     try {
-        const result = await listNFTOnMarketplace(itemId, price, seller);
+        const result = await listNFTOnMarketplace(itemId, price);
         res.json({ message: 'NFT listed successfully on marketplace', result });
     } catch (error) {
         console.error('Error listing NFT on marketplace:', error);
@@ -155,9 +143,9 @@ app.post('/api/marketplace/list-nft-on-marketplace', async (req, res) => {
 });
 
 app.post('/api/marketplace/remove-nft-from-marketplace', async (req, res) => {
-    const { itemId, seller } = req.body;
+    const { itemId } = req.body;
     try {
-        const result = await removeNFTFromMarketplace(itemId, seller);
+        const result = await removeNFTFromMarketplace(itemId);
         res.json({ message: 'NFT removed from marketplace successfully', result });
     } catch (error) {
         console.error('Error removing NFT from marketplace:', error);
@@ -166,9 +154,9 @@ app.post('/api/marketplace/remove-nft-from-marketplace', async (req, res) => {
 });
 
 app.post('/api/marketplace/buy-nft-from-marketplace', async (req, res) => {
-    const { itemId, buyer } = req.body;
+    const { itemId, askingPrice } = req.body;
     try {
-        const result = await buyNFTFromMarketplace(itemId, buyer);
+        const result = await buyNFTFromMarketplace(itemId, askingPrice);
         res.json({ message: 'NFT bought from marketplace successfully', result });
     } catch (error) {
         console.error('Error buying NFT from marketplace:', error);
@@ -177,9 +165,9 @@ app.post('/api/marketplace/buy-nft-from-marketplace', async (req, res) => {
 });
 
 app.post('/api/marketplace/auction-NFT', async (req, res) => {
-    const { tokenId, price, auctionEndTime, seller } = req.body;
+    const { tokenId, price, auctionEndTime } = req.body;
     try {
-        const result = await auctionNFTOnMarketplace(tokenId, price, auctionEndTime, seller);
+        const result = await auctionNFTOnMarketplace(tokenId, price, auctionEndTime);
         res.json({ message: 'NFT listed for auction successfully', result });
     } catch (error) {
         console.error('Error listing NFT for auction:', error);
@@ -188,9 +176,9 @@ app.post('/api/marketplace/auction-NFT', async (req, res) => {
 });
 
 app.post('/api/marketplace/auction-NFT', async (req, res) => {
-    const { itemId, bid, bidder } = req.body;
+    const { itemId, bid } = req.body;
     try {
-        const result = await bidOnNFTAuction(itemId, bid, bidder);
+        const result = await bidOnNFTAuction(itemId, bid);
         res.json({ message: 'Auction bid placed on NFT successfully', result });
     } catch (error) {
         console.error('Error placing auction bid on NFT:', error);
@@ -199,9 +187,9 @@ app.post('/api/marketplace/auction-NFT', async (req, res) => {
 });
 
 app.post('/api/marketplace/end-auction', async (req, res) => {
-    const { itemId, seller } = req.body;
+    const { itemId } = req.body;
     try {
-        const result = await endNFTAuction(itemId, seller);
+        const result = await endNFTAuction(itemId);
         res.json({ message: 'NFT auction ended successfully', result });
     } catch (error) {
         console.error('Error ending NFT auction:', error);

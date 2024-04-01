@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract MyNFT is ERC721URIStorage, IERC2981, Ownable {
+contract NFT is ERC721URIStorage, IERC2981, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 

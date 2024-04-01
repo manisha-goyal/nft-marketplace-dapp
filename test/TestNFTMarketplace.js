@@ -1,4 +1,4 @@
-const MyNFT = artifacts.require("MyNFT");
+const NFT = artifacts.require("NFT");
 const NFTMarketplace = artifacts.require("NFTMarketplace");
 
 contract("NFTMarketplace", (accounts) => {
@@ -7,7 +7,7 @@ contract("NFTMarketplace", (accounts) => {
 
     before(async () => {
         marketplaceInstance = await NFTMarketplace.new();
-        myNftInstance = await MyNFT.new(marketplaceInstance.address);
+        myNftInstance = await NFT.new(marketplaceInstance.address);
     });
 
     it("lists an NFT on the marketplace", async () => {
