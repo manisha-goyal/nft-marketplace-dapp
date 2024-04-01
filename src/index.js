@@ -98,6 +98,21 @@ app.post('/api/nft/update-nft-royalty', async (req, res) => {
     }
 });
 
+app.post('/api/nft/royalty-info', async (req, res) => {
+    const { tokenId, salePrice } = req.body;
+    try {
+        const royaltyInfo = await getRoyaltyInfo(tokenId, salePrice); // Assuming a sale price of 1 ether as example
+        res.json({ 
+            tokenId: tokenId,
+            royaltyAmount: royaltyInfo.royaltyAmount,
+            receiver: royaltyInfo.receiver
+        });
+    } catch (error) {
+        console.error('Error fetching royalty information:', error);
+        res.status(500).json({ error: 'Error fetching royalty information' });
+    }
+});
+
 app.get('/api/marketplace/available-market-nfts', async (req, res) => {
     try {
         const availableNFTs = await getAvailableMarketNFTs();
