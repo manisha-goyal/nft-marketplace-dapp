@@ -17,7 +17,7 @@ const {
     auctionNFTOnMarketplace,
     bidOnNFTAuction,
     endNFTAuction
-  } = require('./web3Service');
+} = require('./web3Service');
 
 const app = express();
 const port = process.env.PORT;
@@ -29,7 +29,7 @@ app.post('/api/nft/fetch-nft', async (req, res) => {
 
     try {
         const receipt = await getNFT(tokenId);
-        res.json({ 
+        res.json({
             message: 'NFT retrieved successfully',
             transactionReceipt: receipt
         });
@@ -44,7 +44,7 @@ app.post('/api/nft/mint-nft', async (req, res) => {
 
     try {
         const receipt = await mintNFT(toAddress, tokenURI, royalty);
-        res.json({ 
+        res.json({
             message: 'NFT minted successfully',
             transactionReceipt: receipt
         });
@@ -57,25 +57,25 @@ app.post('/api/nft/mint-nft', async (req, res) => {
 app.post('/api/nft/batch-mint-nfts', async (req, res) => {
     const { toAddresses, tokenURIs, royalties } = req.body;
     try {
-      const receipt = await batchMintNFTs(toAddresses, tokenURIs, royalties);
-      res.json({ message: 'NFTs batch minted successfully', transactionReceipt: receipt });
+        const receipt = await batchMintNFTs(toAddresses, tokenURIs, royalties);
+        res.json({ message: 'NFTs batch minted successfully', transactionReceipt: receipt });
     } catch (error) {
-      console.error('Error batch minting NFTs:', error);
-      res.status(500).json({ error: 'Error batch minting NFTs' });
+        console.error('Error batch minting NFTs:', error);
+        res.status(500).json({ error: 'Error batch minting NFTs' });
     }
 });
 
 app.post('/api/nft/enable-nft-transfer', async (req, res) => {
     const { tokenId } = req.body;
     try {
-      const receipt = await enableNFTTransfer(tokenId);
-      res.json({ message: 'NFT transfer enabled successfully', transactionReceipt: receipt });
+        const receipt = await enableNFTTransfer(tokenId);
+        res.json({ message: 'NFT transfer enabled successfully', transactionReceipt: receipt });
     } catch (error) {
-      console.error('Error enabling NFT transfer:', error);
-      res.status(500).json({ error: 'Error enabling NFT transfer' });
+        console.error('Error enabling NFT transfer:', error);
+        res.status(500).json({ error: 'Error enabling NFT transfer' });
     }
-  });
-  
+});
+
 app.post('/api/nft/disable-nft-transfer', async (req, res) => {
     const { tokenId } = req.body;
     try {
@@ -86,7 +86,7 @@ app.post('/api/nft/disable-nft-transfer', async (req, res) => {
         res.status(500).json({ error: 'Error disabling NFT transfer' });
     }
 });
-  
+
 app.post('/api/nft/update-nft-royalty', async (req, res) => {
     const { tokenId, newRoyalty } = req.body;
     try {
@@ -102,7 +102,7 @@ app.post('/api/nft/royalty-info', async (req, res) => {
     const { tokenId, salePrice } = req.body;
     try {
         const royaltyInfo = await getRoyaltyInfo(tokenId, salePrice); // Assuming a sale price of 1 ether as example
-        res.json({ 
+        res.json({
             tokenId: tokenId,
             royaltyAmount: royaltyInfo.royaltyAmount,
             receiver: royaltyInfo.receiver

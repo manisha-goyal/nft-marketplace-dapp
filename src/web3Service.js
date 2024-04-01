@@ -73,31 +73,31 @@ async function getMarketplaceListingFee() {
 
 async function listNFTOnMarketplace(tokenId, price, seller) {
   await initContracts();
-  const listingFee = await marketplaceInstance.getMarketplaceListingFee({from: seller});
-  return marketplaceInstance.createMarketItem(nftInstance.address, tokenId, web3.utils.toWei(price, 'ether'), {from: seller, value: listingFee});
+  const listingFee = await marketplaceInstance.getMarketplaceListingFee({ from: seller });
+  return marketplaceInstance.createMarketItem(nftInstance.address, tokenId, web3.utils.toWei(price, 'ether'), { from: seller, value: listingFee });
 }
 
 async function removeNFTFromMarketplace(itemId) {
   await initContracts();
-  const listingFee = await marketplaceInstance.getMarketplaceListingFee({from: seller});
-  return marketplaceInstance.removeMarketItem(nftInstance.address, itemId, {from: seller, value: listingFee});
+  const listingFee = await marketplaceInstance.getMarketplaceListingFee({ from: seller });
+  return marketplaceInstance.removeMarketItem(nftInstance.address, itemId, { from: seller, value: listingFee });
 }
 
 async function buyNFTFromMarketplace(itemId, buyer) {
   await initContracts();
   const item = await marketplaceInstance.getMarketItemById(itemId);
-  return marketplaceInstance.createMarketSale(nftInstance.address, itemId, {from: buyer, value: item.price});
+  return marketplaceInstance.createMarketSale(nftInstance.address, itemId, { from: buyer, value: item.price });
 }
 
 async function auctionNFTOnMarketplace(tokenId, price, auctionEndTime, seller) {
   await initContracts();
-  const listingFee = await marketplaceInstance.getMarketplaceListingFee({from: seller});
-  return marketplaceInstance.createAuctionItem(nftInstance.address, tokenId, web3.utils.toWei(price, 'ether'), auctionEndTime, {from: seller, value: listingFee});
+  const listingFee = await marketplaceInstance.getMarketplaceListingFee({ from: seller });
+  return marketplaceInstance.createAuctionItem(nftInstance.address, tokenId, web3.utils.toWei(price, 'ether'), auctionEndTime, { from: seller, value: listingFee });
 }
 
 async function bidOnNFTAuction(itemId, bid, bidder) {
   await initContracts();
-  return marketplaceInstance.bidOnAuction(itemId, {from: bidder, value: bid});
+  return marketplaceInstance.bidOnAuction(itemId, { from: bidder, value: bid });
 }
 
 async function endNFTAuction(itemId, seller) {
