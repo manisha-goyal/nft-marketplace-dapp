@@ -12,8 +12,6 @@ contract NFTMarketplace is ReentrancyGuard {
     using SafeMath for uint256;
 
     Counters.Counter private _itemIds;
-    Counters.Counter private _itemsSold;
-    Counters.Counter private _itemsRemoved;
 
     address payable owner;
     uint256 listingFee = 0.025 ether;
@@ -134,8 +132,6 @@ contract NFTMarketplace is ReentrancyGuard {
 
         idToMarketItem[itemId].owner = payable(msg.sender);
         idToMarketItem[itemId].removed = true;
-
-        _itemsRemoved.increment();
     }
 
     function createAuctionItem(address nftContract, uint256 tokenId, uint256 minBid, uint256 auctionEndTime) 
@@ -173,13 +169,14 @@ contract NFTMarketplace is ReentrancyGuard {
     {
         uint256 price = idToMarketItem[itemId].price;
         uint256 tokenId = idToMarketItem[itemId].tokenId;
+        require(idToMarketItem[itemId].sold == false, "Item already sold");
         require(msg.value == price, "Please submit the asking price to complete the purchase");
 
-        (, uint256 royaltyAmount) = IERC2981(nftContract).royaltyInfo(tokenId, price);
+        (address royaltyReceiver, uint256 royaltyAmount) = IERC2981(nftContract).royaltyInfo(tokenId, price);
         require(royaltyAmount <= price, "Royalty exceeds sale price");
 
         if (royaltyAmount > 0) {
-            (bool royaltySuccess, ) = payable(idToMarketItem[itemId].seller).call{value: royaltyAmount}("");
+            (bool royaltySuccess, ) = payable(royaltyReceiver).call{value: royaltyAmount}("");
             require(royaltySuccess, "Failed to send royalty");
         }
 
@@ -192,9 +189,8 @@ contract NFTMarketplace is ReentrancyGuard {
         require(proceedsSuccess, "Failed to send seller proceeds");
         IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
         
-        _itemsSold.increment();
-
-        payable(owner).transfer(listingFee);
+        (bool listingFeeSuccess, ) = payable(owner).call{value: listingFee}("");
+        require(listingFeeSuccess, "Failed to send listing fee");
 
         emit MarketSaleCreated(
             itemId,
@@ -216,7 +212,8 @@ contract NFTMarketplace is ReentrancyGuard {
         require(msg.value > auction.highestBid, "There is already a higher bid");
 
         if (auction.highestBidder != address(0)) {
-            auction.highestBidder.transfer(auction.highestBid);
+            (bool returnBidSuccess, ) = auction.highestBidder.call{value: auction.highestBid}("");
+            require(returnBidSuccess, "Failed to return previous highest bidder proceeds");
         }
 
         auction.highestBid = msg.value;
@@ -245,12 +242,14 @@ contract NFTMarketplace is ReentrancyGuard {
             require(royaltyAmount <= auction.highestBid, "Royalty exceeds the highest bid");
 
             uint256 sellerProceeds = auction.highestBid - royaltyAmount;
-
+            
             if (royaltyAmount > 0) {
-                payable(royaltyReceiver).transfer(royaltyAmount);
+                (bool royaltySuccess, ) = payable(royaltyReceiver).call{value: royaltyAmount}("");
+                require(royaltySuccess, "Failed to send royalty");
             }
 
-            auction.seller.transfer(sellerProceeds);
+            (bool proceedsSuccess, ) = auction.seller.call{value: sellerProceeds}("");
+            require(proceedsSuccess, "Failed to send seller proceeds");
             IERC721(auction.nftContract).transferFrom(address(this), auction.highestBidder, auction.tokenId);
         } else {
             IERC721(auction.nftContract).transferFrom(address(this), auction.seller, auction.tokenId);
@@ -268,24 +267,26 @@ contract NFTMarketplace is ReentrancyGuard {
     function getAvailableMarketItems() 
         public 
         view 
-        returns (MarketItem[] memory) 
+        returns (uint256[] memory) 
     {
         uint256 itemsCount = _itemIds.current();
-        uint256 soldItemsCount = _itemsSold.current();
-        uint256 removedItemsCount = _itemsRemoved.current();
-        uint256 availableItemsCount = itemsCount - soldItemsCount - removedItemsCount;
+        uint256 availableItemsCount = 0;
+        for (uint256 i = 0; i < itemsCount; i++) {
+            if (idToMarketItem[i + 1].owner == address(0) && !idToMarketItem[i + 1].sold && !idToMarketItem[i + 1].removed) {
+                availableItemsCount += 1;
+            }
+        }
         
-        MarketItem[] memory marketItems = new MarketItem[](availableItemsCount);
+        uint256[] memory availableItemIds = new uint256[](availableItemsCount);
         uint256 currentIndex = 0;
         for (uint256 i = 0; i < itemsCount; i++) {
-            MarketItem memory item = idToMarketItem[i + 1];
-            if (item.owner != address(0)) 
-                continue;
-            marketItems[currentIndex] = item;
-            currentIndex += 1;
+            if (idToMarketItem[i + 1].owner == address(0) && !idToMarketItem[i + 1].sold && !idToMarketItem[i + 1].removed) {
+                availableItemIds[currentIndex] = i + 1; // Store the itemId
+                currentIndex += 1;
+            }
         }
 
-        return marketItems;
+        return availableItemIds;
     }
 
     function getMarketItemById(uint256 itemId) 
