@@ -29,7 +29,7 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("fails to create a market NFT from incorrect owner", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft1.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
     
         try {
@@ -41,7 +41,7 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("completes a market sale", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft1.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft2.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
 
         const listingFee = await marketplaceInstance.getMarketplaceListingFee();
@@ -85,7 +85,7 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("fails to auction NFT from incorrect owner", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft4.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
     
         const auctionEndTime = (await web3.eth.getBlock('latest')).timestamp + 86400; // 24 hours from now
@@ -106,7 +106,7 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("allows only the seller to remove a listed NFT before sale", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft5.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
         const listingFee = await marketplaceInstance.getMarketplaceListingFee();
     
@@ -124,7 +124,7 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("allows a seller to remove a listed NFT before sale", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft4.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft6.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
         const listingFee = await marketplaceInstance.getMarketplaceListingFee();
     
@@ -143,7 +143,7 @@ contract("NFTMarketplace", (accounts) => {
     });
     
     it("ends an auction correctly and transfers ownership", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft5.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft7.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
         const auctionEndTime = (await web3.eth.getBlock('latest')).timestamp + 86400;
         const listingFee = await marketplaceInstance.getMarketplaceListingFee();
@@ -161,7 +161,7 @@ contract("NFTMarketplace", (accounts) => {
     });
     
     it("fails to create a market NFT without listing fee", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft6.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft8.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
     
         try {
@@ -173,7 +173,7 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("correctly handles multiple bids on an auction NFT and refunds the previous highest bidder", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft7.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft9.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();;
 
         const auctionEndTime = (await web3.eth.getBlock('latest')).timestamp + 86400;
@@ -196,7 +196,7 @@ contract("NFTMarketplace", (accounts) => {
     });
     
     it("ends an auction correctly and transfers ownership with multiple bids on an auction NFT", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft8.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft10.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();;
 
         const auctionEndTime = (await web3.eth.getBlock('latest')).timestamp + 86400;
@@ -219,7 +219,7 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("prevents buying a sold market NFT", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft9.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft11.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
 
         const listingFee = await marketplaceInstance.getMarketplaceListingFee();
@@ -240,7 +240,7 @@ contract("NFTMarketplace", (accounts) => {
     });
 
     it("only allows marketplace owner to end NFT auction", async () => {
-        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft5.json", 100, { from: accounts[0] });
+        const newItemId = await myNftInstance.mintNFT(accounts[0], "https://example.com/nft12.json", 100, { from: accounts[0] });
         const tokenId = newItemId.logs[0].args.tokenId.toNumber();
         const auctionEndTime = (await web3.eth.getBlock('latest')).timestamp + 86400;
         const listingFee = await marketplaceInstance.getMarketplaceListingFee();

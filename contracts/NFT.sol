@@ -7,7 +7,9 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract NFT is ERC721URIStorage, IERC2981 {
     using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    Counters.Counter private tokenIds;
+
+    mapping(string => bool) tokenURIExists;
 
     mapping(uint256 => address) private nftCreators;
 
@@ -39,8 +41,9 @@ contract NFT is ERC721URIStorage, IERC2981 {
         string memory tokenURI,
         uint256 royalty
     ) public returns (uint256) {
-        _tokenIds.increment();
-        uint256 newItemId = _tokenIds.current();
+        require(!tokenURIExists[tokenURI], 'The token URI is not unique');
+        tokenIds.increment();
+        uint256 newItemId = tokenIds.current();
         _mint(recipient, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
@@ -66,9 +69,13 @@ contract NFT is ERC721URIStorage, IERC2981 {
         uint256[] memory royalties
     ) public returns (uint256[] memory) {
         require(
-            tokenURIs.length == royalties.length,
-            "URIs and royalties length mismatch"
+            recipients.length == tokenURIs.length && tokenURIs.length == royalties.length,
+            "Recipeints, URIs and royalties length mismatch"
         );
+
+        for (uint i = 0; i < tokenURIs.length; i++) {
+            require(!tokenURIExists[tokenURIs[i]], 'The token URIs are not unique');
+        }
 
         uint256[] memory newItemId = new uint256[](tokenURIs.length);
 
