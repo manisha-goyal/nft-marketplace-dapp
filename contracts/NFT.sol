@@ -3,10 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract NFT is ERC721URIStorage, IERC2981, Ownable {
+contract NFT is ERC721URIStorage, IERC2981 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -39,7 +38,7 @@ contract NFT is ERC721URIStorage, IERC2981, Ownable {
         address recipient,
         string memory tokenURI,
         uint256 royalty
-    ) public onlyOwner returns (uint256) {
+    ) public returns (uint256) {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         _mint(recipient, newItemId);
@@ -65,15 +64,19 @@ contract NFT is ERC721URIStorage, IERC2981, Ownable {
         address[] memory recipients,
         string[] memory tokenURIs,
         uint256[] memory royalties
-    ) public onlyOwner {
+    ) public returns (uint256[] memory) {
         require(
             tokenURIs.length == royalties.length,
             "URIs and royalties length mismatch"
         );
 
+        uint256[] memory newItemId = new uint256[](tokenURIs.length);
+
         for (uint i = 0; i < tokenURIs.length; i++) {
-            mintNFT(recipients[i], tokenURIs[i], royalties[i]);
+            newItemId[i] = mintNFT(recipients[i], tokenURIs[i], royalties[i]);
         }
+
+        return newItemId;
     }
 
     function enableTransfer(uint256 tokenId) public onlyNFTOwner(tokenId) {
