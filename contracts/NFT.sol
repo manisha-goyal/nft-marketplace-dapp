@@ -128,6 +128,14 @@ contract NFT is ERC721URIStorage, IERC2981 {
         return marketplaceAddress;
     }
 
+    function getNFTCreator(uint256 tokenId) 
+        external
+        view
+        returns (address creator)
+    {
+        return nftCreators[tokenId];
+    }
+
     function getTotalSupply()
         external
         view
