@@ -127,4 +127,13 @@ contract NFT is ERC721URIStorage, IERC2981 {
     {
         return marketplaceAddress;
     }
+
+    function getTotalSupply()
+        external
+        view
+        returns (uint256 supply)
+    {
+        return tokenIds.current();
+    }
+
 }
