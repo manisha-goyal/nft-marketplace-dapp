@@ -6,8 +6,7 @@
   "scripts": {
     "compile": "truffle compile",
     "migrate": "truffle migrate",
-    "test": "truffle test",
-    "start": "node src/index.js"
+    "test": "truffle test"
   },
   "author": "Manisha Goyal",
   "license": "MIT",
