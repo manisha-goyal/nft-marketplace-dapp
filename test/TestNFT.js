@@ -23,6 +23,11 @@ contract("NFT", accounts => {
 		assert.equal(event, "Transfer", "Expected Transfer event to be emitted");
 	});
 
+	it("should get the total supply", async () => {
+		const receipt = await myNftInstance.getTotalSupply();
+		assert.equal(receipt, 2, "The total supply should be 2");
+	});
+
     it("should set the correct royalty information", async () => {
 		const newItemId = await myNftInstance.mintNFT(accounts[1], "https://example.com/nft2.json", royalty, { from: accounts[0] });
 		const tokenId = newItemId.logs[0].args.tokenId.toNumber();
