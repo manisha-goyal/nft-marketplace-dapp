@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 
 import MintNFTForm from './MintNFTForm';
 import NFTCollection from './NFTCollection';
-import NFTContext from '../../../provider/NFTProvider';
+import NFTContext from '../../../providers/NFTProvider';
 import Spinner from '../../layout/Spinner';
 import logo from '../../../img/logo-collection.PNG'
 

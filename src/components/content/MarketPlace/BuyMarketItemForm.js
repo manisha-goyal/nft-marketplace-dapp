@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 
 import Web3Context from '../../../providers/Web3Provider';
 import MarketplaceContext from '../../../providers/MarketplaceProvider';
@@ -22,7 +22,7 @@ const BuyMarketItemForm = ({itemId}) => {
 
 	useEffect(() => {
 		if (itemId) {
-			setEnteredMarketItemId(tokenId);
+			setEnteredMarketItemId(itemId);
 			setMarketItemIdIsValid(true);
 		}
 	}, [itemId]);
@@ -34,7 +34,7 @@ const BuyMarketItemForm = ({itemId}) => {
 
 		const buyMarketItem = async () => {
 			try {
-				const item = await MarketplaceState.contract.methods.getMarketItemById(marketItemId).call();
+				const item = await marketplaceContext.contract.methods.getMarketItemById(marketItemId).call();
 				const price = item.price;
 				await marketplaceContext.contract.methods.createMarketSale(web3Context.nftContractAddress, marketItemId)
 					.send({ from: web3Context.account, value: price })

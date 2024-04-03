@@ -3,8 +3,9 @@ import { useState, useContext } from 'react';
 import Web3Context from '../../../providers/Web3Provider';
 import NFTContext from '../../../providers/NFTProvider';
 
-const ipfsClient = require('ipfs-http-client');
-const ipfs = ipfsClient.create({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
+// For newer versions, you might need to use destructuring or specific imports
+import { create } from 'ipfs-http-client';
+const ipfs = create({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
 
 const MintNFTForm = () => {
 	const [nftName, setEnteredName] = useState('');

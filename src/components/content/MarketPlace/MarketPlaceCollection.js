@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 
-import MarketplaceContext from '../../../provider/MarketplaceProvider';
-import Web3Context from '../../../provider/Web3Provider';
+import MarketplaceContext from '../../../providers/MarketplaceProvider';
+import Web3Context from '../../../providers/Web3Provider';
 import BuyMarketItemForm from './BuyMarketItemForm';
 import RemoveMarketItemForm from './RemoveMarketItemForm';
 import BidOnAuctionItemForm from './BidOnAuctionItemForm';
@@ -42,13 +42,13 @@ const MarketPlaceCollection = () => {
 
     return (
         <div>
-            {formType ? (
+            {selectedAction ? (
                 renderForm()
             ) : (
                 <>
                     <h2>Market Items</h2>
                     <div className="row text-center">
-                        {marketItems?.map((item) => (
+                        {marketplaceContext.marketItems?.map((item) => (
                             <div key={item.itemId} className="col-md-4 m-3 pb-3 card border-info">
                                 <div className="card-body">
                                     <h5 className="card-title">{item.title}</h5>
@@ -71,7 +71,7 @@ const MarketPlaceCollection = () => {
                     <hr />
                     <h2>Auction Items</h2>
                     <div className="row text-center">
-                        {auctionItems?.map((item) => (
+                        {marketplaceContext.auctionItems?.map((item) => (
                             <div key={item.itemId} className="col-md-4 m-3 pb-3 card border-info">
                                 <div className="card-body">
                                     <h5 className="card-title">{item.title}</h5>

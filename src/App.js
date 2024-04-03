@@ -7,8 +7,8 @@ import MarketMain from './components/Content/MarketPlace/MarketMain';
 import Web3Context from './providers/Web3Provider';
 import NFTContext from './providers/NFTProvider';
 import MarketplaceContext from './providers/MarketplaceProvider'
-import NFT from '../build/NFT.json';
-import NFTMarketplace from '../build/NFTMarketplace.json';
+import NFT from './contracts/NFT.json';
+import NFTMarketplace from './contracts/NFTMarketplace.json';
 
 const App = () => {
 	const web3Context = useContext(Web3Context);

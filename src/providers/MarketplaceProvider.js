@@ -129,7 +129,7 @@ const MarketplaceProvider = props => {
 					const tokenURI = await nftContract.methods.tokenURI(item.tokenId).call();
 					const response = await fetch(`https://ipfs.infura.io/ipfs/${tokenURI}`);
 					const metadata = await response.json();
-					const owner = await nftContract.methods.ownerOf(tokenId).call();
+					const owner = await nftContract.methods.ownerOf(item.tokenId).call();
 
 					return {
 						itemId: item.itemId,

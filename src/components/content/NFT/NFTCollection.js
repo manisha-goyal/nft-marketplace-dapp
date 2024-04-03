@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'; // Import useState
 
-import Web3Context from '../../../store/web3-context';
-import NFTContext from '../../../provider/NFTProvider';
+import Web3Context from '../../../providers/Web3Provider';
+import NFTContext from '../../../providers/NFTProvider';
 import CreateMarketItemForm from '../MarketPlace/CreateMarketItemForm';
 import CreateAuctionItemForm from '../MarketPlace/CreateAuctionItemForm';
 
