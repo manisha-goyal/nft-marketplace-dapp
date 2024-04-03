@@ -584,7 +584,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-04-03T07:36:20.069Z",
+  "updatedAt": "2024-04-03T08:16:01.647Z",
   "devdoc": {
     "events": {
       "Approval(address,address,uint256)": {

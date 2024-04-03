@@ -1,12 +1,13 @@
 import React, { useContext, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 
 import web3 from './connection/web3';
 import Navbar from './components/layout/Navbar';
 import NFTMain from './components/content/NFT/NFTMain';
 import MarketMain from './components/content/MarketPlace/MarketMain';
-import Web3Context from './providers/Web3Provider';
-import NFTContext from './providers/NFTProvider';
-import MarketplaceContext from './providers/MarketplaceProvider'
+import Web3Context from './providers/Web3Context';
+import NFTContext from './providers/NFTContext';
+import MarketplaceContext from './providers/MarketplaceContext'
 import NFT from './contracts/NFT.json';
 import NFTMarketplace from './contracts/NFTMarketplace.json';
 
@@ -16,6 +17,7 @@ const App = () => {
 	const marketplaceContext = useContext(MarketplaceContext);
 
 	useEffect(() => {
+
 		if (!web3) {
 			window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!');
 			return;
@@ -32,11 +34,9 @@ const App = () => {
 			const networkId = await web3Context.loadNetworkId(web3);
 
 			const nftDeployedNetwork = NFT.networks[networkId];
-			const nftContract = nftContext.loadContract(web3, NFT, nftDeployedNetwork);
+			const nftContract = await nftContext.loadContract(web3, NFT, nftDeployedNetwork);
 			const mktDeployedNetwork = NFTMarketplace.networks[networkId];
-			const marketplaceContract = marketplaceContext.loadContract(web3, NFTMarketplace, mktDeployedNetwork);
-
-			await web3Context.loadContractAddresses();
+			const marketplaceContract = await marketplaceContext.loadContract(web3, NFTMarketplace, mktDeployedNetwork);
 
 			if (nftContract) {
 				await nftContext.getTotalSupply();
@@ -57,12 +57,12 @@ const App = () => {
 
 			if (marketplaceContract) {
 				await marketplaceContext.loadListingFee();
-				await marketplaceContext.loadMarketItemsHandler();
-				await marketplaceContext.loadAuctionItemsHandler();
+				await marketplaceContext.loadMarketItems();
+				await marketplaceContext.loadAuctionItems();
 
 				marketplaceContract.events.MarketItemCreated()
 					.on('data', () => {
-						marketplaceContext.loadMarketItemsHandler();
+						marketplaceContext.loadMarketItems();
 						marketplaceContext.setMktIsLoading(false);
 					})
 					.on('error', (error) => {
@@ -71,7 +71,7 @@ const App = () => {
 
 				marketplaceContract.events.AuctionItemCreated()
 					.on('data', () => {
-						marketplaceContext.loadAuctionItemsHandler();
+						marketplaceContext.loadAuctionItems();
 						marketplaceContext.setMktIsLoading(false);
 					})
 					.on('error', (error) => {
@@ -80,7 +80,7 @@ const App = () => {
 
 				marketplaceContract.events.MarketSaleCreated()
 					.on('data', () => {
-						marketplaceContext.loadMarketItemsHandler();
+						marketplaceContext.loadAuctionItems();
 						nftContext.getNFTCollection();
 						nftContext.setNftIsLoading(false);
 						marketplaceContext.setMktIsLoading(false);
@@ -91,7 +91,7 @@ const App = () => {
 
 				marketplaceContract.events.BidPlaced()
 					.on('data', () => {
-						marketplaceContext.loadAuctionItemsHandler();
+						marketplaceContext.loadAuctionItems();
 						marketplaceContext.setMktIsLoading(false);
 					})
 					.on('error', (error) => {
@@ -100,7 +100,7 @@ const App = () => {
 
 				marketplaceContract.events.AuctionEnded()
 					.on('data', () => {
-						marketplaceContext.loadAuctionItemsHandler();
+						marketplaceContext.loadAuctionItems();
 						nftContext.getNFTCollection();
 						nftContext.setNftIsLoading(false);
 						marketplaceContext.setMktIsLoading(false);
@@ -113,8 +113,8 @@ const App = () => {
 				window.alert('NFTMarketplace contract not deployed to detected network.')
 			}
 
-			nftContext.setNftIsLoading(false);
-			marketplaceContext.setMktIsLoading(false);
+			await nftContext.setNftIsLoading(false);
+			await marketplaceContext.setMktIsLoading(false);
 		};
 
 		const accountsChangedHandler = (accounts) => {
@@ -139,14 +139,31 @@ const App = () => {
 	}, []);
 
 	const showNavbar = web3 && nftContext.contract && marketplaceContext.contract;
-	const showContent = web3 && nftContext.contract && marketplaceContext.contract && web3Context.account;
+	const showContent = showNavbar && web3Context.account;
 
 	return (
-		<React.Fragment>
+		<BrowserRouter>
 			{showNavbar && <Navbar />}
-			{showContent && <NFTMain />}
-			{showContent && <MarketMain />}
-		</React.Fragment>
+			{showContent && (
+				<React.Fragment>
+					<nav>
+						<ul>
+							<li>
+								<Link to="/nft">NFT Collection</Link>
+							</li>
+							<li>
+								<Link to="/market">Marketplace</Link>
+							</li>
+						</ul>
+					</nav>
+					<Routes>
+						<Route path="/nft" element={<NFTMain />} />
+						<Route path="/market" element={<MarketMain />} />
+						<Route path="/" element={<div>Select a page</div>} />
+					</Routes>
+				</React.Fragment>
+			)}
+		</BrowserRouter>
 	);
 };
 

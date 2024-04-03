@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 
-import MarketplaceContext from '../../../providers/MarketplaceProvider';
-import Web3Context from '../../../providers/Web3Provider';
+import MarketplaceContext from '../../../providers/MarketplaceContext';
+import Web3Context from '../../../providers/Web3Context';
 import BuyMarketItemForm from './BuyMarketItemForm';
 import RemoveMarketItemForm from './RemoveMarketItemForm';
 import BidOnAuctionItemForm from './BidOnAuctionItemForm';

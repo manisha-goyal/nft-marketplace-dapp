@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import Web3Context from '../../providers/Web3Provider';
+import Web3Context from '../../providers/Web3Context';
 import web3 from '../../connection/web3';
 
 const Navbar = () => {
@@ -9,13 +9,11 @@ const Navbar = () => {
 
 	const connectWalletHandler = async () => {
 		try {
-			// Request account access
 			await window.ethereum.request({ method: 'eth_requestAccounts' });
 		} catch (error) {
 			console.error(error);
 		}
 
-		// Load accounts
 		web3Context.loadAccount(web3);
 	};
 
@@ -30,7 +28,7 @@ const Navbar = () => {
 							target="blank"
 							rel="noopener noreferrer"
 						>
-							{web3Context.account}
+							Account: {web3Context.account}
 						</a>}
 					{!web3Context.account &&
 						<button

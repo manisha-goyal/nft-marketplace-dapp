@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'; // Import useState
 
-import Web3Context from '../../../providers/Web3Provider';
-import NFTContext from '../../../providers/NFTProvider';
+import Web3Context from '../../../providers/Web3Context';
+import NFTContext from '../../../providers/NFTContext';
 import CreateMarketItemForm from '../MarketPlace/CreateMarketItemForm';
 import CreateAuctionItemForm from '../MarketPlace/CreateAuctionItemForm';
 
@@ -9,17 +9,14 @@ const NFTCollection = () => {
     const web3Context = useContext(Web3Context);
     const nftContext = useContext(NFTContext);
 
-    // State for tracking selected action and token ID
     const [selectedAction, setSelectedAction] = useState('');
     const [selectedTokenId, setSelectedTokenId] = useState(null);
 
-    // Handler to set selected action and token ID
     const handleActionSelect = (action, tokenId) => {
         setSelectedAction(action);
         setSelectedTokenId(tokenId);
     };
 
-    // Function to render the appropriate form based on action
     const renderForm = () => {
         switch (selectedAction) {
             case 'market':
@@ -37,7 +34,6 @@ const NFTCollection = () => {
                 renderForm()
             ) : (
                 <>
-                    <h2>NFT Collection</h2>
                     <div className="row text-center">
                         {nftContext.nftCollection?.map((NFT) => {
                             const owner = NFT.owner;

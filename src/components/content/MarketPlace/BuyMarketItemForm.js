@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 
-import Web3Context from '../../../providers/Web3Provider';
-import MarketplaceContext from '../../../providers/MarketplaceProvider';
+import Web3Context from '../../../providers/Web3Context';
+import MarketplaceContext from '../../../providers/MarketplaceContext';
 
 const BuyMarketItemForm = ({itemId}) => {
 	const web3Context = useContext(Web3Context);

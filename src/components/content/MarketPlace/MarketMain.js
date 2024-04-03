@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 
 import MarketPlaceCollection from './MarketPlaceCollection';
-import MarketplaceContext from '../../../providers/MarketplaceProvider';
+import MarketplaceContext from '../../../providers/MarketplaceContext';
 import Spinner from '../../layout/Spinner';
 import logo from '../../../img/logo-marketplace.png';
 

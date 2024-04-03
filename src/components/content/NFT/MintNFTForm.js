@@ -1,9 +1,8 @@
 import { useState, useContext } from 'react';
 
-import Web3Context from '../../../providers/Web3Provider';
-import NFTContext from '../../../providers/NFTProvider';
+import Web3Context from '../../../providers/Web3Context';
+import NFTContext from '../../../providers/NFTContext';
 
-// For newer versions, you might need to use destructuring or specific imports
 import { create } from 'ipfs-http-client';
 const ipfs = create({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' });
 
@@ -65,9 +64,7 @@ const MintNFTForm = () => {
 
 		const formIsValid = nameIsValid && descriptionIsValid && royaltyIsValid && fileIsValid;
 
-		// Upload file to IPFS and push to the blockchain
 		const mintNFT = async () => {
-			// Add file to the IPFS
 			const fileAdded = await ipfs.add(capturedFileBuffer);
 			if (!fileAdded) {
 				console.error('Something went wrong when updloading the file');
@@ -163,7 +160,7 @@ const MintNFTForm = () => {
 					/>
 					{!royaltyIsValid && <small className="text-danger">Royalty must be between 0% and 100%.</small>}
 				</div>
-				<div className="col-md-2">
+				<div className="col-md-3">
 					<input
 						type='file'
 						className={`${fileClass} mb-1`}

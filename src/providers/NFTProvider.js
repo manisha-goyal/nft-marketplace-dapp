@@ -1,6 +1,6 @@
-import React, { useReducer, createContext } from 'react';
+import React, { useReducer } from 'react';
 
-export const NFTContext = createContext();
+import NFTContext from './NFTContext';
 
 const defaultNFTState = {
     contract: null,

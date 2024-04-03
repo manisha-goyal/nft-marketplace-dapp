@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 
-import Web3Context from '../../../providers/Web3Provider';
-import MarketplaceContext from '../../../providers/MarketplaceProvider';
+import Web3Context from '../../../providers/Web3Context';
+import MarketplaceContext from '../../../providers/MarketplaceContext';
 import { toWei, convertDateToTimestamp } from '../../../utils/helper'
 
 const CreateAuctionItemForm = (tokenId) => {

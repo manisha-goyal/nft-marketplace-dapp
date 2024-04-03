@@ -1,11 +1,11 @@
-import React, { useReducer, createContext } from 'react';
+import React, { useReducer } from 'react';
 
-export const MarketplaceContext = createContext();
+import MarketplaceContext from './MarketplaceContext';
 
 const defaultMarketplaceState = {
 	contract: null,
-	marketItems: null,
-	auctionItems: null,
+	marketItems: [],
+	auctionItems: [],
 	listingFee: null,
 	owner: null,
 	mktIsLoading: true
@@ -125,7 +125,6 @@ const MarketplaceProvider = props => {
 			const auctionItems = await Promise.all(availableAuctionItemIds.map(async (itemId) => {
 				const item = await MarketplaceState.contract.methods.getAuctionItemById(itemId).call();
 				if (!item.ended) {
-					// Assuming you have access to the nftContract here
 					const tokenURI = await nftContract.methods.tokenURI(item.tokenId).call();
 					const response = await fetch(`https://ipfs.infura.io/ipfs/${tokenURI}`);
 					const metadata = await response.json();
