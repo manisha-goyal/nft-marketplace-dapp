@@ -7,6 +7,7 @@ const defaultMarketplaceState = {
 	marketItems: null,
 	auctionItems: null,
 	listingFee: null,
+	owner: null,
 	mktIsLoading: true
 };
 
@@ -31,6 +32,11 @@ const marketplaceReducer = (state, action) => {
 			return {
 				...state,
 				listingFee: action.listingFee
+			};
+		case 'GET_OWNER':
+			return {
+				...state,
+				owner: action.owner
 			};
 		case 'CREATE_MARKET_ITEM':
 			return state;
@@ -70,6 +76,11 @@ const MarketplaceProvider = props => {
 	const loadListingFeeHandler = async () => {
 		const listingFee = await MarketplaceState.contract.methods.getMarketplaceListingFee().call();
 		dispatchMarketplaceAction({ type: 'GET_LISTING_FEE', listingFee: listingFee });
+	};
+
+	const loadOwnerHander = async () => {
+		const owner = await MarketplaceState.contract.methods.getMarketplaceOwner().call();
+		dispatchMarketplaceAction({ type: 'GET_OWNER', owner: owner });
 	};
 
 	const loadMarketItemsHandler = async (nftContract) => {
@@ -151,11 +162,13 @@ const MarketplaceProvider = props => {
 	const marketplaceContext = {
 		contract: MarketplaceState.contract,
 		listingFee: MarketplaceState.listingFee,
+		owner: MarketplaceState.owner,
 		marketItems: MarketplaceState.marketItems,
 		auctionItems: MarketplaceState.auctionItems,
 		mktIsLoading: MarketplaceState.mktIsLoading,
 		loadContract: loadContractHandler,
 		loadListingFee: loadListingFeeHandler,
+		loadOwner: loadOwnerHander,
 		loadMarketItems: loadMarketItemsHandler,
 		loadAuctionItems: loadAuctionItemsHandler,
 		setMktIsLoading: setMktIsLoadingHandler
