@@ -3,20 +3,20 @@
   "version": "1.0.0",
   "description": "A decentralized NFT marketplace project",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
+    "test": "NODE_OPTIONS=--openssl-legacy-provider react-scripts test",
+    "eject": "NODE_OPTIONS=--openssl-legacy-provider react-scripts eject"
   },
   "author": "Manisha Goyal",
   "license": "MIT",
   "devDependencies": {
-    "chai": "^4.3.4",
-    "truffle": "^5.4.0",
     "@openzeppelin/contracts": "^4.4.0",
     "@truffle/contract": "^4.6.31",
+    "chai": "^4.3.4",
     "dotenv": "^16.4.5",
-    "solc": "^0.8.0"
+    "solc": "^0.8.0",
+    "truffle": "^5.4.0"
   },
   "eslintConfig": {
     "extends": [
@@ -40,6 +40,8 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "bootstrap": "^5.3.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",

@@ -26,7 +26,7 @@ const Navbar = () => {
 					{web3Context.account &&
 						<a
 							className="nav-link small"
-							href={`https://rinkeby.etherscan.io/address/${web3Context.account}`}
+							href={`https://sepolia.etherscan.io/address/${web3Context.account}`}
 							target="blank"
 							rel="noopener noreferrer"
 						>

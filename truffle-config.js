@@ -1,3 +1,9 @@
+require('dotenv').config();
+
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const infuraUrl = `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`;
+const privateKeys = [process.env.WALLET_PRIVATE_KEY]
+
 module.exports = {
   networks: {
     development: {
@@ -5,17 +11,11 @@ module.exports = {
       port: 8545, // Standard Ethereum port (Ganache GUI)
       network_id: "*" // Any network
     },
-    rinkeby: {
-      provider: function() {
-        return new HDWalletProvider(
-          privateKeys.split(','), // array of private keys
-          `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}` // Url to an Ethereum node
-        )
-      },
-      gas: 5000000,
-      gasPrice: 25000000000,
-      network_id: 4
-    }
+    sepolia: {
+      provider: () => new HDWalletProvider(privateKeys, infuraUrl),
+      network_id: 11155111,
+      gasPrice: 10e9,
+    },
   },
   contracts_directory: './contracts',
   contracts_build_directory: './build',
