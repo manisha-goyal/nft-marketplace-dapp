@@ -4,3 +4,5 @@ package-lock.json
 .vscode
 build
 .DS_Store
+.env
+.env
