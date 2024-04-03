@@ -3,7 +3,7 @@ import React, { useContext } from 'react';
 import MarketPlaceCollection from './MarketPlaceCollection';
 import MarketplaceContext from '../../../providers/MarketplaceProvider';
 import Spinner from '../../layout/Spinner';
-import logo from '../../../img/logo-marketplace.PNG';
+import logo from '../../../img/logo-marketplace.png';
 
 const MarketMain = () => {
     const marketplaceContext = useContext(MarketplaceContext);

@@ -4,7 +4,7 @@ import MintNFTForm from './MintNFTForm';
 import NFTCollection from './NFTCollection';
 import NFTContext from '../../../providers/NFTProvider';
 import Spinner from '../../layout/Spinner';
-import logo from '../../../img/logo-collection.PNG'
+import logo from '../../../img/logo-collection.png'
 
 const NFTMain = () => {
 	const nftContext = useContext(NFTContext);

@@ -1,9 +1,9 @@
 import React, { useContext, useEffect } from 'react';
 
 import web3 from './connection/web3';
-import Navbar from './components/Layout/Navbar';
+import Navbar from './components/layout/Navbar';
 import NFTMain from './components/content/NFT/NFTMain';
-import MarketMain from './components/Content/MarketPlace/MarketMain';
+import MarketMain from './components/content/MarketPlace/MarketMain';
 import Web3Context from './providers/Web3Provider';
 import NFTContext from './providers/NFTProvider';
 import MarketplaceContext from './providers/MarketplaceProvider'
