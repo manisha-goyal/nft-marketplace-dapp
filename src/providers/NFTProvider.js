@@ -89,6 +89,7 @@ export const NFTProvider = props => {
                     id: tokenId,
                     title: metadata.properties.name.description,
                     img: metadata.properties.image.description,
+                    royalty: metadata.properties.royalty.description,
                     owner,
                     creator
                 };
@@ -111,54 +112,6 @@ export const NFTProvider = props => {
         }
     };
 
-    const mintNFTHandler = async (account, tokenURI, royalty) => {
-        if (!NFTState.contract || !account) {
-            console.error("Contract not loaded or account not set");
-            return;
-        }
-
-        setNftIsLoadingHandler(true);
-
-        try {
-            const transactionReceipt = await NFTState.contract.methods.mintNFT(account, tokenURI, royalty)
-                .send({ from: account });
-
-            console.log('NFT minted successfully:', transactionReceipt);
-
-            await getTotalSupplyHandler();
-            await getNFTCollectionHandler();
-            dispatchNFTAction({ type: 'MINT' });
-        } catch (error) {
-            console.error('Error minting NFT:', error);
-        } finally {
-            setNftIsLoadingHandler(false);
-        }
-    };
-
-    const batchMintNFTHandler = async (account, recipients, tokenURIs, royalties) => {
-        if (!NFTState.contract || !account) {
-            console.error("Contract not loaded or account not set");
-            return;
-        }
-
-        setNftIsLoadingHandler(true);
-
-        try {
-            const transactionReceipt = await NFTState.contract.methods.mintMultipleNFTs(recipients, tokenURIs, royalties)
-                .send({ from: account });
-
-            console.log('NFTs batch minted successfully:', transactionReceipt);
-
-            await getTotalSupplyHandler();
-            await getNFTCollectionHandler();
-            dispatchNFTAction({ type: 'BATCH_MINT' });
-        } catch (error) {
-            console.error('Error batch minting NFTs:', error);
-        } finally {
-            setNftIsLoadingHandler(false);
-        }
-    };
-
     const setNftIsLoadingHandler = (loading) => {
         dispatchNFTAction({ type: 'LOADING', loading: loading });
     };
@@ -171,8 +124,6 @@ export const NFTProvider = props => {
         loadContract: loadContractHandler,
         getTotalSupply: getTotalSupplyHandler,
         getNFTCollection: getNFTCollectionHandler,
-        mintNFT: mintNFTHandler,
-        batchMintNFTs: batchMintNFTHandler,
         setNftIsLoading: setNftIsLoadingHandler,
     };
 

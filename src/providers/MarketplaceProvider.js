@@ -34,6 +34,8 @@ const marketplaceReducer = (state, action) => {
 			};
 		case 'CREATE_MARKET_ITEM':
 			return state;
+		case 'REMOVE_MARKET_ITEM':
+			return state;
 		case 'CREATE_AUCTION_ITEM':
 			return state;
 		case 'BUY_MARKET_ITEM':
@@ -77,8 +79,8 @@ const MarketplaceProvider = props => {
 			const availableItemIds = await MarketplaceState.contract.methods.getAvailableMarketItems().call();
 			const marketItems = await Promise.all(availableItemIds.map(async (itemId) => {
 				const item = await MarketplaceState.contract.methods.getMarketItemById(itemId).call();
-				return item;
-			}));
+				return !item.sold && !item.removed ? item : null;
+			})).filter(item => item !== null);
 	
 			dispatchMarketplaceAction({ type: 'GET_MARKET_ITEMS', marketItems: marketItems });
 		} catch (error) {
@@ -95,104 +97,12 @@ const MarketplaceProvider = props => {
 			const availableAuctionItemIds = await MarketplaceState.contract.methods.getAvailableAuctionItems().call();
 			const auctionItems = await Promise.all(availableAuctionItemIds.map(async (itemId) => {
 				const item = await MarketplaceState.contract.methods.getAuctionItemById(itemId).call();
-				return item;
-			}));
+				return !item.ended? item : null;
+			})).filter(item => item !== null);
 	
 			dispatchMarketplaceAction({ type: 'GET_AUCTION_ITEMS', auctionItems: auctionItems });
 		} catch (error) {
 			console.error('Failed to load auction items:', error);
-		} finally {
-			setMktIsLoadingHandler(false);
-		}
-	};	
-
-	const createMarketItemHandler = async (account, nftContractAddress, tokenId, price) => {
-		setMktIsLoadingHandler(true);
-		
-		try {
-			const listingFee = MarketplaceState.listingFee; 
-			const transactionReceipt = await MarketplaceState.contract.methods
-				.createMarketItem(nftContractAddress, tokenId, price)
-				.send({ from: account, value: listingFee });
-			
-			console.log('Market item created successfully:', transactionReceipt);
-
-			await loadMarketItemsHandler();
-			dispatchMarketplaceAction({ type: 'CREATE_MARKET_ITEM'});
-		} catch (error) {
-			console.error('Failed to create market item:', error);
-		} finally {
-			setMktIsLoadingHandler(false);
-		}
-	};	
-
-	const createAuctionItemHandler = async (account, nftContractAddress, tokenId, minBid, auctionEndTime) => {
-		setMktIsLoadingHandler(true);
-		
-		try {
-			const listingFee = MarketplaceState.listingFee;
-			const transactionReceipt = await MarketplaceState.contract.methods
-				.createAuctionItem(nftContractAddress, tokenId, minBid, auctionEndTime)
-				.send({ from: account, value: listingFee });
-			
-			console.log('Auction item created successfully:', transactionReceipt);
-			
-			await loadAuctionItemsHandler();
-			dispatchMarketplaceAction({ type: 'CREATE_AUCTION_ITEM'});
-		} catch (error) {
-			console.error('Failed to create auction item:', error);
-		} finally {
-			setMktIsLoadingHandler(false);
-		}
-	};	
-
-	const buyMarketItemHandler = async (account, itemId, price) => {
-		setMktIsLoadingHandler(true);
-	
-		try {
-			const transactionReceipt = await MarketplaceState.contract.methods.createMarketSale(itemId)
-				.send({ from: account, value: price });
-
-			console.log('NFT bought successfully:', transactionReceipt);
-			
-			await loadMarketItemsHandler();
-			dispatchMarketplaceAction({ type: 'BUY_MARKET_ITEM'});
-		} catch (error) {
-			console.error('Failed to buy market item:', error);
-		} finally {
-			setMktIsLoadingHandler(false);
-		}
-	};
-
-	const placeBidHandler = async (account, itemId, bidAmount) => {
-		setMktIsLoadingHandler(true);
-	
-		try {
-			const transactionReceipt = await MarketplaceState.contract.methods.bidOnAuction(itemId)
-				.send({ from: account, value: bidAmount });
-			
-			console.log('Bid placed successfully:', transactionReceipt);
-			
-			dispatchMarketplaceAction({ type: 'BID_ON_AUCTION'});
-		} catch (error) {
-			console.error('Failed to place bid:', error);
-		} finally {
-			setMktIsLoadingHandler(false);
-		}
-	};
-
-	const endMarketAuctionHandler = async (account, itemId) => {
-		setMktIsLoadingHandler(true);
-	
-		try {
-			const transactionReceipt = await MarketplaceState.contract.methods.endAuction(itemId)
-				.send({ from: account });
-			
-			console.log('Market auction ended successfully:', transactionReceipt);
-			await loadAuctionItemsHandler();
-			dispatchMarketplaceAction({ type: 'END_AUCTION'});
-		} catch (error) {
-			console.error('Failed to end market auction:', error);
 		} finally {
 			setMktIsLoadingHandler(false);
 		}
@@ -212,11 +122,6 @@ const MarketplaceProvider = props => {
 		loadListingFee: loadListingFeeHandler,
 		loadMarketItems: loadMarketItemsHandler,
 		loadAuctionItems: loadAuctionItemsHandler,
-		createMarketItem: createMarketItemHandler,
-		createAuctionItem: createAuctionItemHandler,
-		buyMarketItem: buyMarketItemHandler,
-		bidOnAuction: placeBidHandler,
-		endAuction: endMarketAuctionHandler,
 		setMktIsLoading: setMktIsLoadingHandler
 	};
 

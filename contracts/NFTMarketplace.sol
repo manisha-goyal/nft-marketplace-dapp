@@ -118,6 +118,9 @@ contract NFTMarketplace is ReentrancyGuard {
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
+        (bool listingFeeSuccess, ) = payable(owner).call{value: listingFee}("");
+        require(listingFeeSuccess, "Failed to send listing fee");
+
         emit MarketItemCreated(
             itemId,
             nftContract,
@@ -181,6 +184,9 @@ contract NFTMarketplace is ReentrancyGuard {
 
         IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
 
+        (bool listingFeeSuccess, ) = payable(owner).call{value: listingFee}("");
+        require(listingFeeSuccess, "Failed to send listing fee");
+
         emit AuctionItemCreated(
             itemId,
             nftContract,
@@ -226,9 +232,6 @@ contract NFTMarketplace is ReentrancyGuard {
         }("");
         require(proceedsSuccess, "Failed to send seller proceeds");
         IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
-
-        (bool listingFeeSuccess, ) = payable(owner).call{value: listingFee}("");
-        require(listingFeeSuccess, "Failed to send listing fee");
 
         emit MarketSaleCreated(
             itemId,
@@ -299,11 +302,6 @@ contract NFTMarketplace is ReentrancyGuard {
                 auction.highestBidder,
                 auction.tokenId
             );
-
-            (bool listingFeeSuccess, ) = payable(owner).call{value: listingFee}(
-                ""
-            );
-            require(listingFeeSuccess, "Failed to send listing fee");
         } else {
             IERC721(auction.nftContract).transferFrom(
                 address(this),

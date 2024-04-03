@@ -8,10 +8,17 @@ const toWei = (etherValue) => {
   return Web3.utils.toWei(etherValue, 'ether');
 };
 
-const formatDate = (timestamp) => {
+const convertTimestampToDate = (timestamp) => {
   const date = new Date(parseInt(timestamp) * 1000);
   return date.toLocaleString();
 };
+
+function convertDateToTimestamp(dateString) {
+  const date = new Date(dateString);
+  const timestamp = date.getTime() / 1000;
+  return timestamp;
+}
+
 
 const parseErrorMessage = (error) => {
   if (error.message.includes('revert')) {
@@ -27,7 +34,8 @@ const parseErrorMessage = (error) => {
 module.exports = {
   fromWei,
   toWei,
-  formatDate,
+  convertTimestampToDate,
+  convertDateToTimestamp,
   parseErrorMessage,
 };
 
