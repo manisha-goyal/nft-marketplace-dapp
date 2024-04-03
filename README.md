@@ -78,7 +78,7 @@ npm start
 
 Ensure you have the following for deploying to Sepolia:
 - Sepolia network added to your MetaMask.
-- Sepolia test ETH for gas fees. You can get this from [Sepolia Faucet](https://faucet.sepolia.dev/).
+- Sepolia test ETH for gas fees.
 
 ## Built With
 
