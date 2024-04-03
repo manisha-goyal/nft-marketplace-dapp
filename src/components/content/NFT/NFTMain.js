@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import React, { useContext } from 'react';
 
 import MintNFTForm from './MintNFTForm';
 import NFTCollection from './NFTCollection';
@@ -8,21 +8,20 @@ import logo from '../../../img/logo-collection.PNG'
 
 const NFTMain = () => {
 	const nftContext = useContext(NFTContext);
+	const isLoading = nftContext.nftIsLoading;
 
 	return (
 		<div className="container-fluid mt-2">
 			<div className="row">
 				<main role="main" className="col-lg-12 justify-content-center text-center">
 					<div className="content mr-auto ml-auto">
-						<img src={logo} alt="logo" width="500" height="140" className="mb-2" />
-						{!nftContext.nftIsLoading && <MintNFTForm />}
-						{nftContext.nftIsLoading && <Spinner />}
+						<img src={logo} alt="NFT Collection Logo" width="500" height="140" className="mb-2" />
+						{isLoading ? <Spinner /> : <MintNFTForm />}
 					</div>
 				</main>
 			</div>
 			<hr />
-			{!nftContext.nftIsLoading && <NFTCollection />}
-			{nftContext.nftIsLoading && <Spinner />}
+			{isLoading ? <Spinner /> : <NFTCollection />}
 		</div>
 	);
 };

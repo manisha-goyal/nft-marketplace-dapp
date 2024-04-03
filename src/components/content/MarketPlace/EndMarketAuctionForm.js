@@ -1,15 +1,16 @@
 import React, { useState, useContext } from 'react';
+
 import Web3Context from '../../../providers/Web3Provider';
 import MarketplaceContext from '../../../providers/MarketplaceProvider';
 
-const EndMarketAuctionForm = () => {
-    const web3Context = useContext(Web3Context);
-    const marketplaceContext = useContext(MarketplaceContext);
+const EndMarketAuctionForm = ({itemId}) => {
+	const web3Context = useContext(Web3Context);
+	const marketplaceContext = useContext(MarketplaceContext);
 
-    const [auctionItemId, setEnteredAuctionItemId] = useState('');
+	const [auctionItemId, setEnteredAuctionItemId] = useState('');
 	const [auctionItemIdIsValid, setAuctionItemIdIsValid] = useState(true);
 
-    const auctionItemIdHandler = (event) => {
+	const auctionItemIdHandler = (event) => {
 		const value = event.target.value;
 		if (value >= 0) {
 			setEnteredAuctionItemId(value);
@@ -19,34 +20,41 @@ const EndMarketAuctionForm = () => {
 		}
 	};
 
-    const endMarketAuctionHandler = (event) => {
-        event.preventDefault();
+	useEffect(() => {
+		if (itemId) {
+			setEnteredAuctionItemId(tokenId);
+			setAuctionItemIdIsValid(true);
+		}
+	}, [itemId]);
 
-        const formIsValid = auctionItemIdIsValid;
+	const endMarketAuctionHandler = (event) => {
+		event.preventDefault();
 
-        const endMarketAuction = async () => {
-            try {
-                await marketplaceContext.contract.methods.endAuction(web3Context.nftContractAddress, auctionItemId)
-                    .send({ from: web3Context.marketplaceContractAddress })
-                    .on('transactionHash', (hash) => {
-                        marketplaceContext.setMktIsLoading(true);
-                    })
-                    .on('error', (e) => {
-                        window.alert('Something went wrong when ending auction on market item');
-                        marketplaceContext.setMktIsLoading(false);
-                    });
-                alert("Auction ended on market item successfully!");
+		const formIsValid = auctionItemIdIsValid;
+
+		const endMarketAuction = async () => {
+			try {
+				await marketplaceContext.contract.methods.endAuction(web3Context.nftContractAddress, auctionItemId)
+					.send({ from: web3Context.marketplaceContractAddress })
+					.on('transactionHash', (hash) => {
+						marketplaceContext.setMktIsLoading(true);
+					})
+					.on('error', (e) => {
+						window.alert('Something went wrong when ending auction on market item');
+						marketplaceContext.setMktIsLoading(false);
+					});
+				alert("Auction ended on market item successfully!");
 				marketplaceContext.loadAuctionItems();
-            } catch (error) {
-                console.error('Error ending auction on market item:', error);
-                alert("Failed to end auction on market item.");
-            }
-        };
+			} catch (error) {
+				console.error('Error ending auction on market item:', error);
+				alert("Failed to end auction on market item.");
+			}
+		};
 
 		formIsValid && endMarketAuction();
-    };
+	};
 
-    const auctionItemIdClass = auctionItemIdIsValid ? "form-control" : "form-control is-invalid";
+	const auctionItemIdClass = auctionItemIdIsValid ? "form-control" : "form-control is-invalid";
 
 	return (
 		<form onSubmit={endMarketAuctionHandler}>

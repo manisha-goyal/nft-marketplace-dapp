@@ -1,19 +1,27 @@
 import React, { useState, useContext } from 'react';
+
 import Web3Context from '../../../providers/Web3Provider';
 import MarketplaceContext from '../../../providers/MarketplaceProvider';
 import { toWei } from '../../../utils/helper'
 
-const CreateMarketItemForm = () => {
-    const web3Context = useContext(Web3Context);
-    const marketplaceContext = useContext(MarketplaceContext);
+const CreateMarketItemForm = ({ tokenId }) => {
+	const web3Context = useContext(Web3Context);
+	const marketplaceContext = useContext(MarketplaceContext);
 
-    const [marketTokenId, setEnteredMarketTokenId] = useState('');
+	const [marketTokenId, setEnteredMarketTokenId] = useState('');
 	const [marketTokenIdIsValid, setMarketTokenIdIsValid] = useState(true);
 
-    const [marketItemPrice, setEnteredMarketItemPrice] = useState('');
+	const [marketItemPrice, setEnteredMarketItemPrice] = useState('');
 	const [marketItemPriceIsValid, setMarketItemPriceIsValid] = useState(true);
 
-    const marketItemIdHandler = (event) => {
+	useEffect(() => {
+		if (tokenId) {
+			setEnteredMarketTokenId(tokenId);
+			setMarketTokenIdIsValid(true);
+		}
+	}, [tokenId]);
+
+	const marketTokenIdHandler = (event) => {
 		const value = event.target.value;
 		if (value >= 0) {
 			setEnteredMarketTokenId(value);
@@ -23,41 +31,41 @@ const CreateMarketItemForm = () => {
 		}
 	};
 
-    const marketItemPriceHandler = (event) => {
+	const marketItemPriceHandler = (event) => {
 		const value = event.target.value;
 		setEnteredMarketItemPrice(value);
 		setMarketItemPriceIsValid(!!value);
 	};
 
-    const createMarketItemHandler = (event) => {
-        event.preventDefault();
+	const createMarketItemHandler = (event) => {
+		event.preventDefault();
 
-        const marketFormIsValid = marketTokenIdIsValid && marketItemPriceIsValid;
+		const marketFormIsValid = marketTokenIdIsValid && marketItemPriceIsValid;
 
-        const createMarketItem = async () => {
-            try {
-                const listingFee = marketplaceContext.listingFee;
-                await marketplaceContext.contract.methods.createMarketItem(web3Context.nftContractAddress, marketTokenId, toWei(marketItemPrice))
-                    .send({ from: web3Context.account, value: listingFee })
-                    .on('transactionHash', (hash) => {
-                        marketplaceContext.setMktIsLoading(true);
-                    })
-                    .on('error', (e) => {
-                        window.alert('Something went wrong when creating market item');
-                        marketplaceContext.setMktIsLoading(false);
-                    });
-                alert("Market item created successfully!");
+		const createMarketItem = async () => {
+			try {
+				const listingFee = marketplaceContext.listingFee;
+				await marketplaceContext.contract.methods.createMarketItem(web3Context.nftContractAddress, marketTokenId, toWei(marketItemPrice))
+					.send({ from: web3Context.account, value: listingFee })
+					.on('transactionHash', (hash) => {
+						marketplaceContext.setMktIsLoading(true);
+					})
+					.on('error', (e) => {
+						window.alert('Something went wrong when creating market item');
+						marketplaceContext.setMktIsLoading(false);
+					});
+				alert("Market item created successfully!");
 				marketplaceContext.loadMarketItems();
-            } catch (error) {
-                console.error('Error creating market item:', error);
-                alert("Failed to create market item.");
-            }
-        };
+			} catch (error) {
+				console.error('Error creating market item:', error);
+				alert("Failed to create market item.");
+			}
+		};
 
 		marketFormIsValid && createMarketItem();
-    };
+	};
 
-    const marketTokenIdClass = marketTokenIdIsValid ? "form-control" : "form-control is-invalid";
+	const marketTokenIdClass = marketTokenIdIsValid ? "form-control" : "form-control is-invalid";
 	const marketItemPriceClass = marketItemPriceIsValid ? "form-control" : "form-control is-invalid";
 
 	return (
@@ -69,7 +77,7 @@ const CreateMarketItemForm = () => {
 						className={`${marketTokenIdClass} mb-1`}
 						placeholder='Token ID...'
 						value={marketTokenId}
-						onChange={marketItemIdHandler}
+						onChange={marketTokenIdHandler}
 						min="0"
 						step="1"
 					/>

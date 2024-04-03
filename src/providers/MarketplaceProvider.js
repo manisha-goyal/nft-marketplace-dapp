@@ -72,34 +72,70 @@ const MarketplaceProvider = props => {
 		dispatchMarketplaceAction({ type: 'GET_LISTING_FEE', listingFee: listingFee });
 	};
 
-	const loadMarketItemsHandler = async () => {
+	const loadMarketItemsHandler = async (nftContract) => {
 		setMktIsLoadingHandler(true);
-	
+
 		try {
 			const availableItemIds = await MarketplaceState.contract.methods.getAvailableMarketItems().call();
-			const marketItems = await Promise.all(availableItemIds.map(async (itemId) => {
+			const marketItemsWithMetadata = await Promise.all(availableItemIds.map(async (itemId) => {
 				const item = await MarketplaceState.contract.methods.getMarketItemById(itemId).call();
-				return !item.sold && !item.removed ? item : null;
+				if (!item.sold && !item.removed) {
+					const tokenURI = await nftContract.methods.tokenURIs(item.tokenId).call();
+					const metadataResponse = await fetch(`https://ipfs.infura.io/ipfs/${tokenURI}`);
+					const metadata = await metadataResponse.json();
+					return {
+						itemId: item.itemId,
+						title: metadata.properties.name.description,
+						img: metadata.properties.image.description,
+						royalty: metadata.properties.royalty.description,
+						tokenId: item.tokenId,
+						seller: item.seller,
+						owner: item.owner,
+						price: item.price,
+					};
+				} else {
+					return null;
+				}
 			})).filter(item => item !== null);
-	
-			dispatchMarketplaceAction({ type: 'GET_MARKET_ITEMS', marketItems: marketItems });
+
+			dispatchMarketplaceAction({ type: 'GET_MARKET_ITEMS', marketItems: marketItemsWithMetadata });
 		} catch (error) {
 			console.error('Failed to load market items:', error);
 		} finally {
 			setMktIsLoadingHandler(false);
 		}
 	};
-	
-	const loadAuctionItemsHandler = async () => {
+
+	const loadAuctionItemsHandler = async (nftContract) => {
 		setMktIsLoadingHandler(true);
-	
+
 		try {
 			const availableAuctionItemIds = await MarketplaceState.contract.methods.getAvailableAuctionItems().call();
 			const auctionItems = await Promise.all(availableAuctionItemIds.map(async (itemId) => {
 				const item = await MarketplaceState.contract.methods.getAuctionItemById(itemId).call();
-				return !item.ended? item : null;
+				if (!item.ended) {
+					// Assuming you have access to the nftContract here
+					const tokenURI = await nftContract.methods.tokenURI(item.tokenId).call();
+					const response = await fetch(`https://ipfs.infura.io/ipfs/${tokenURI}`);
+					const metadata = await response.json();
+					const owner = await nftContract.methods.ownerOf(tokenId).call();
+
+					return {
+						itemId: item.itemId,
+						title: metadata.properties.name.description,
+						img: metadata.properties.image.description,
+						royalty: metadata.properties.royalty.description,
+						tokenId: item.tokenId,
+						seller: item.seller,
+						owner: owner,
+						highestBid: item.highestBid,
+						highestBidder: item.highestBidder,
+						auctionEnd: item.auctionEndTime,
+					};
+				}
+				return null;
 			})).filter(item => item !== null);
-	
+
 			dispatchMarketplaceAction({ type: 'GET_AUCTION_ITEMS', auctionItems: auctionItems });
 		} catch (error) {
 			console.error('Failed to load auction items:', error);
@@ -107,7 +143,7 @@ const MarketplaceProvider = props => {
 			setMktIsLoadingHandler(false);
 		}
 	};
-	
+
 	const setMktIsLoadingHandler = (loading) => {
 		dispatchMarketplaceAction({ type: 'LOADING', loading: loading });
 	};

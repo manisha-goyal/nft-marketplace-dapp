@@ -1,32 +1,40 @@
 import React, { useState, useContext } from 'react';
+
 import Web3Context from '../../../providers/Web3Provider';
 import MarketplaceContext from '../../../providers/MarketplaceProvider';
 
-const BidOnMarketItemForm = () => {
+const BidOnMarketItemForm = ({itemId}) => {
     const web3Context = useContext(Web3Context);
     const marketplaceContext = useContext(MarketplaceContext);
 
     const [auctionItemId, setEnteredAuctionItemId] = useState('');
-	const [auctionItemIdIsValid, setAuctionItemIdIsValid] = useState(true);
+    const [auctionItemIdIsValid, setAuctionItemIdIsValid] = useState(true);
 
-	const [auctionItemBid, setEnteredAuctionItemBid] = useState('');
+    const [auctionItemBid, setEnteredAuctionItemBid] = useState('');
     const [auctionItemBidIsValid, setAuctionItemBidIsValid] = useState(true);
 
     const auctionItemIdHandler = (event) => {
-		const value = event.target.value;
-		if (value >= 0) {
-			setEnteredAuctionItemId(value);
-			setAuctionItemIdIsValid(true);
-		} else {
-			setAuctionItemIdIsValid(false);
-		}
-	};
+        const value = event.target.value;
+        if (value >= 0) {
+            setEnteredAuctionItemId(value);
+            setAuctionItemIdIsValid(true);
+        } else {
+            setAuctionItemIdIsValid(false);
+        }
+    };
 
-	const auctionItemBidHandler = (event) => {
+    const auctionItemBidHandler = (event) => {
         const value = event.target.value;
         setEnteredAuctionItemBid(value);
         setAuctionItemBidIsValid(!!value);
     };
+
+    useEffect(() => {
+		if (itemId) {
+			setEnteredAuctionItemId(tokenId);
+			setAuctionItemIdIsValid(true);
+		}
+	}, [itemId]);
 
     const bidOnAuctionItemHandler = (event) => {
         event.preventDefault();
@@ -51,28 +59,28 @@ const BidOnMarketItemForm = () => {
             }
         };
 
-		formIsValid && bidOnAuctionItem();
+        formIsValid && bidOnAuctionItem();
     };
 
     const auctionItemIdClass = auctionItemIdIsValid ? "form-control" : "form-control is-invalid";
-	const auctionItemBidClass = auctionItemBidIsValid ? "form-control" : "form-control is-invalid";
+    const auctionItemBidClass = auctionItemBidIsValid ? "form-control" : "form-control is-invalid";
 
-	return (
-		<form onSubmit={bidOnAuctionItemHandler}>
-			<div className="row justify-content-center">
-				<div className="col-md-2">
-					<input
-						type='number'
-						className={`${auctionItemIdClass} mb-1`}
-						placeholder='Item ID...'
-						value={auctionItemId}
-						onChange={auctionItemIdHandler}
-						min="0"
-						step="1"
-					/>
-					{!auctionItemIdIsValid && <small className="text-danger">Item ID greater than 0 must be entered</small>}
-				</div>
-				<div className="col-md-6">
+    return (
+        <form onSubmit={bidOnAuctionItemHandler}>
+            <div className="row justify-content-center">
+                <div className="col-md-2">
+                    <input
+                        type='number'
+                        className={`${auctionItemIdClass} mb-1`}
+                        placeholder='Item ID...'
+                        value={auctionItemId}
+                        onChange={auctionItemIdHandler}
+                        min="0"
+                        step="1"
+                    />
+                    {!auctionItemIdIsValid && <small className="text-danger">Item ID greater than 0 must be entered</small>}
+                </div>
+                <div className="col-md-6">
                     <input
                         type='number'
                         className={`${auctionItemBidClass} mb-1`}
@@ -80,14 +88,14 @@ const BidOnMarketItemForm = () => {
                         value={auctionItemBid}
                         onChange={auctionItemBidHandler}
                         min="0"
-						step="0.01"
+                        step="0.01"
                     />
                     {!auctionItemBidIsValid && <small className="text-danger">Bid price must be entered</small>}
                 </div>
-			</div>
-			<button type='submit' className='btn btn-lg btn-info text-white btn-block'>BID ON MARKET AUCTION ITEM</button>
-		</form>
-	);
+            </div>
+            <button type='submit' className='btn btn-lg btn-info text-white btn-block'>BID ON MARKET AUCTION ITEM</button>
+        </form>
+    );
 };
 
 export default BidOnMarketItemForm;  

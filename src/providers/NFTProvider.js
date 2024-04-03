@@ -86,7 +86,7 @@ export const NFTProvider = props => {
                 const creator = await NFTState.contract.methods.getNFTCreator(tokenId).call();
 
                 return {
-                    id: tokenId,
+                    tokenId: tokenId,
                     title: metadata.properties.name.description,
                     img: metadata.properties.image.description,
                     royalty: metadata.properties.royalty.description,

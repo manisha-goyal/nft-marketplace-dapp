@@ -1,9 +1,10 @@
 import React, { useState, useContext } from 'react';
+
 import Web3Context from '../../../providers/Web3Provider';
 import MarketplaceContext from '../../../providers/MarketplaceProvider';
 import { toWei, convertDateToTimestamp } from '../../../utils/helper'
 
-const CreateAuctionItemForm = () => {
+const CreateAuctionItemForm = (tokenId) => {
     const web3Context = useContext(Web3Context);
     const marketplaceContext = useContext(MarketplaceContext);
 
@@ -15,6 +16,13 @@ const CreateAuctionItemForm = () => {
 
     const [auctionItemAuctionEnd, setEnteredAuctionItemAuctionEnd] = useState('');
     const [auctionItemAuctionEndIsValid, setAuctionItemAuctionEndIsValid] = useState(true);
+
+    useEffect(() => {
+        if (tokenId) {
+            setEnteredAuctionTokenId(tokenId);
+            setAuctionTokenIdIsValid(true);
+        }
+    }, [tokenId]);
 
     const auctionTokenIdHandler = (event) => {
         const value = event.target.value;
